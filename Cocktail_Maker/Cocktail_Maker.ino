@@ -3,13 +3,16 @@
 #include <aWOT.h>
 #include <ArduinoJson.h>
 
-//char ssid[] = "Sigma Basement";  // network SSID (name)
-//char pass[] = "257basement"; // for networks that require a password
+char ssid[] = "Sigma Basement";  // network SSID (name)
+char pass[] = "257basement"; // for networks that require a password
 //char ssid[] = "Brown-Guest";  // network SSID (name)
 //char pass[] = ""; // for networks that require a password
-char ssid[] = "Dumplings";  // network SSID (name)
-char pass[] = "dicksonthewall"; // for networks that require a password
+//char ssid[] = "Dumplings";  // network SSID (name)
+//char pass[] = "dicksonthewall"; // for networks that require a password
 int status = WL_IDLE_STATUS;
+
+char heroku[] = "arduino-cocktail-maker.herokuapp.com";
+String indexPage = "";
 
 //
 //typedef struct ingredient_t{
@@ -34,43 +37,44 @@ void index(Request &req, Response &res) {
   res.status(200);
   res.set("Content-type", "text/html");
   res.println();
-  res.println(
-    "<!DOCTYPE html>\n"
-    "<html lang='en'>\n"
-      "<head>\n"
-        "<style type='text/css'>\n"
-            "html {\n"
-                "overflow: auto;\n"
-            "}\n"
-            "html,\n"
-            "body,\n"
-            "div,\n"
-            "iframe {\n"
-                "margin: 0px;\n"
-                "padding: 0px;\n"
-                "height: 100%;\n"
-                "border: none;\n"
-            "}\n"
-            "iframe {\n"
-                "display: block;\n"
-                "width: 100%;\n"
-                "border: none;\n"
-                "overflow-y: auto;\n"
-                "overflow-x: hidden;\n"
-            "}\n"
-        "</style>\n"
-        "<title>Party Time!</title>\n"
-      "</head>\n"
-      "<body>\n"
-        "<iframe src='http://arduino-cocktail-maker.herokuapp.com/'\n"
-            "frameborder='0'\n"
-            "marginheight='0'\n"
-            "marginwidth='0'\n"
-            "width='100%'\n"
-            "height='100%'\n" 
-            "scrolling='auto'></iframe >\n"
-      "</body>\n"
-    "</html>\n");
+//  res.println(
+//    "<!DOCTYPE html>\n"
+//    "<html lang='en'>\n"
+//      "<head>\n"
+//        "<style type='text/css'>\n"
+//            "html {\n"
+//                "overflow: auto;\n"
+//            "}\n"
+//            "html,\n"
+//            "body,\n"
+//            "div,\n"
+//            "iframe {\n"
+//                "margin: 0px;\n"
+//                "padding: 0px;\n"
+//                "height: 100%;\n"
+//                "border: none;\n"
+//            "}\n"
+//            "iframe {\n"
+//                "display: block;\n"
+//                "width: 100%;\n"
+//                "border: none;\n"
+//                "overflow-y: auto;\n"
+//                "overflow-x: hidden;\n"
+//            "}\n"
+//        "</style>\n"
+//        "<title>Party Time!</title>\n"
+//      "</head>\n"
+//      "<body>\n"
+//        "<iframe src='http://arduino-cocktail-maker.herokuapp.com/'\n"
+//            "frameborder='0'\n"
+//            "marginheight='0'\n"
+//            "marginwidth='0'\n"
+//            "width='100%'\n"
+//            "height='100%'\n" 
+//            "scrolling='auto'></iframe >\n"
+//      "</body>\n"
+//    "</html>\n");
+    res.println(indexPage);
     res.println();
     res.flush();
     //client.stop();
@@ -136,7 +140,7 @@ void getStatus(Request &req, Response &res) {
  */
 
 void postDrinks (Request &req, Response &res) {
-    StaticJsonDocument<500> doc;
+    StaticJsonDocument<1000> doc;
     deserializeJson(doc, *req.stream());
     Serial.println("postDrinks");
     updateDrinkData(doc);
@@ -154,6 +158,67 @@ void postDrinks (Request &req, Response &res) {
 //      String description = doc[i]["description"];
 //      return   
 //    }
+}
+
+void postPumps (Request &req, Response &res) {
+    StaticJsonDocument<1000> doc;
+    deserializeJson(doc, *req.stream());
+    Serial.println("postPumps");
+    updatePumpData(doc);
+    res.status(200);
+    res.set("Content-Type", "application/json");
+    res.set("Access-Control-Allow-Origin", "*");
+    res.println();
+    StaticJsonDocument<200> retDoc;
+    deserializeJson(doc, "{\"success\":true,\"error\":\"\"}");
+    serializeJsonPretty(doc, *req.stream());
+    res.println();
+    res.flush();
+//    for (int i = 0; i < numDrinks; i++){
+//      String name = doc[i]["name"];
+//      String description = doc[i]["description"];
+//      return   
+//    }
+}
+
+void getIndexPage() {
+  Serial.println("Getting Heroku Index Page");
+  WiFiClient client;
+  if (client.connect(heroku, 80)) {
+    client.println("GET / HTTP/1.1");
+    client.println("HOST: arduino-cocktail-maker.herokuapp.com");
+    client.println("Connection: close");
+    client.println();
+    bool clientRead = false;
+    bool htmlReached = false;
+    while (!clientRead) {
+      int len = client.available();
+      if (len > 0) {
+        byte buffer[80];
+        if (len > 80) len = 80;
+        client.read(buffer, len);
+        for (int i = 0; i < len; i++) {
+          if (!htmlReached) {
+            if ((char) (buffer[i]) == '<') {
+              htmlReached = true;
+            }
+          }
+          if (htmlReached) {
+            indexPage += (char) buffer[i];
+          }
+        }
+      }
+
+      if (!client.connected()) {
+        client.stop();
+        clientRead = true;
+        Serial.println("Heroku Index Page Loaded");
+//        Serial.println(indexPage);
+      }
+    }
+  } else {
+    Serial.println("Loading Heroku Failed");
+  }
 }
   
 void setup() {
@@ -174,6 +239,7 @@ void setup() {
     delay(1000);
   }
   Serial.println("Connected!");
+  getIndexPage();
   IPAddress ip = WiFi.localIP();
   char buffer[40];
   sprintf(buffer, "Server is at: %d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
@@ -186,6 +252,7 @@ void setup() {
   app.get("/pumps", &getPumps);
   app.get("/status", &getStatus);
   app.post("/drinks", &postDrinks);
+  app.post("/pumps", &postPumps);
   server.begin();
 }
 

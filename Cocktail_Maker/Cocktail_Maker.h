@@ -1,7 +1,7 @@
 #include <ArduinoJson.h>
 
-StaticJsonDocument<200> getDrinkData();
-StaticJsonDocument<200> getPumpData();
+StaticJsonDocument<1000> getDrinkData();
+StaticJsonDocument<1000> getPumpData();
 
-void updateDrinkData(StaticJsonDocument<500> drinks);
+void updateDrinkData(StaticJsonDocument<1000> drinks);
 void SDSetup ();

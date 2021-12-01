@@ -15,8 +15,8 @@ void SDSetup () {
 }
 
 
-StaticJsonDocument<200> getDrinkData() {
-  StaticJsonDocument<200> doc;
+StaticJsonDocument<1000> getDrinkData() {
+  StaticJsonDocument<1000> doc;
   if (SD.exists("drinks.txt")) {
     File file = SD.open("drinks.txt");
     String json = "";
@@ -34,8 +34,8 @@ StaticJsonDocument<200> getDrinkData() {
   return doc;
 }
 
-StaticJsonDocument<200> getPumpData() {
-  StaticJsonDocument<200> doc;
+StaticJsonDocument<1000> getPumpData() {
+  StaticJsonDocument<1000> doc;
   if (SD.exists("pumps.txt")) {
     File file = SD.open("pumps.txt");
     String json = "";
@@ -53,7 +53,7 @@ StaticJsonDocument<200> getPumpData() {
   return doc;
 }
 
-void updateDrinkData(StaticJsonDocument<500> doc) {
+void updateDrinkData(StaticJsonDocument<1000> doc) {
   JsonArray drinks = doc.as<JsonArray>();
   for (JsonObject drink : drinks) {
     const char* drinkStr = drink["name"];
@@ -67,6 +67,14 @@ void updateDrinkData(StaticJsonDocument<500> doc) {
   serializeJson(doc, file);
   serializeJson(doc, Serial);
   file.close();
-    
+}
 
+void updatePumpData(StaticJsonDocument<1000> doc) {
+  JsonArray pumps = doc.as<JsonArray>();
+  Serial.println("updating pumps sd");
+  SD.remove("pumps.txt");
+  File file = SD.open("pumps.txt", FILE_WRITE);
+  serializeJson(doc, file);
+  serializeJson(doc, Serial);
+  file.close();
 }
