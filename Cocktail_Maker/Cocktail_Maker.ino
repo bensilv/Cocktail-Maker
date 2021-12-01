@@ -83,13 +83,13 @@ void getPumps(Request &req, Response &res) {
 
 
 void getStatus(Request &req, Response &res) {
-  Serial.print("getting pumps");
+  Serial.println("getting status");
   res.status(200);
   res.set("Content-type", "application/json");
   res.set("Access-Control-Allow-Origin", "*");
   res.println();
   StaticJsonDocument<200> doc;
-  deserializeJson(doc, "{\"name\":\"John Smith\",\"password\":\"secret\"}");
+  deserializeJson(doc, "{\"status\":\"Ready to Make\"}");
   serializeJsonPretty(doc, *req.stream());
   res.println();
   res.flush();
@@ -137,7 +137,7 @@ void postPumps (Request &req, Response &res) {
 }
 
 void makeDrink(Request &req, Response &res) {
-  Serial.print("make drink request");
+  Serial.println("make drink request");
   
   //setup response stuff
   res.status(200);
