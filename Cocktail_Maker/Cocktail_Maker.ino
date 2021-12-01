@@ -62,7 +62,7 @@ void index(Request &req, Response &res) {
         "<title>Party Time!</title>\n"
       "</head>\n"
       "<body>\n"
-        "<iframe src='https://arduino-cocktail-maker.herokuapp.com/'\n"
+        "<iframe src='http://arduino-cocktail-maker.herokuapp.com/'\n"
             "frameborder='0'\n"
             "marginheight='0'\n"
             "marginwidth='0'\n"
@@ -98,6 +98,7 @@ void getDrinks(Request &req, Response &res) {
   Serial.print("getting drinks");
   res.status(200);
   res.set("Content-type", "application/json");
+  res.set("Access-Control-Allow-Origin", "*");
   res.println();
   serializeJsonPretty(getDrinkData(), *req.stream());
   res.println();
@@ -109,6 +110,7 @@ void getPumps(Request &req, Response &res) {
   Serial.print("getting pumps");
   res.status(200);
   res.set("Content-type", "application/json");
+  res.set("Access-Control-Allow-Origin", "*");
   res.println();
   serializeJsonPretty(getPumpData(), *req.stream());
   res.println();
@@ -120,6 +122,7 @@ void getStatus(Request &req, Response &res) {
   Serial.print("getting pumps");
   res.status(200);
   res.set("Content-type", "application/json");
+  res.set("Access-Control-Allow-Origin", "*");
   res.println();
   StaticJsonDocument<200> doc;
   deserializeJson(doc, "{\"name\":\"John Smith\",\"password\":\"secret\"}");
@@ -135,9 +138,11 @@ void getStatus(Request &req, Response &res) {
 void postDrinks (Request &req, Response &res) {
     StaticJsonDocument<500> doc;
     deserializeJson(doc, *req.stream());
+    Serial.println("postDrinks");
     updateDrinkData(doc);
     res.status(200);
     res.set("Content-Type", "application/json");
+    res.set("Access-Control-Allow-Origin", "*");
     res.println();
     StaticJsonDocument<200> retDoc;
     deserializeJson(doc, "{\"success\":true,\"error\":\"\"}");
@@ -152,14 +157,16 @@ void postDrinks (Request &req, Response &res) {
 }
   
 void setup() {
+  
 
 //  char json_drink[] = "[{\"name\":\"martini\",\"description\":\"it's a martini\"}]";
 //  drink_t drink = parseJSONdrinks(json_drink, 1);
     
                      
-  SDSetup();
   Serial.begin(9600);
   while(!Serial);
+//  Serial.println(SDCARD_SS_PIN);
+  SDSetup();
   while (status != WL_CONNECTED) {
     Serial.print("Attempting to connect to: ");
     Serial.println(ssid);

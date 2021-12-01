@@ -5,11 +5,10 @@
 
 
 void SDSetup () {
-  Serial.begin(9600);
-  while (!Serial) { 
-  }
   Serial.print("Initializing SD card...");
-  if (!SD.begin(10)) {
+//  pinMode(4, OUTPUT); // change this to 53 on a mega  // don't follow this!!
+//  digitalWrite(4, HIGH); // Add this line
+  if (!SD.begin(4)) {
   Serial.println("initialization failed!");
   }
   Serial.println("initialization done.");
@@ -18,29 +17,40 @@ void SDSetup () {
 
 StaticJsonDocument<200> getDrinkData() {
   StaticJsonDocument<200> doc;
-  File file = SD.open("drinks.txt");
-  String json = "";
-  if (file) {
-    while (file.available()) {
-      json += file.read();
-    }
-    file.close();
+  if (SD.exists("drinks.txt")) {
+    File file = SD.open("drinks.txt");
+    String json = "";
+    if (file) {
+      while (file.available()) {
+        json += file.read();
+      }
+      file.close();
+   }
+   Serial.println(json);
+   deserializeJson(doc, json);
+  } else {
+    String json = "[]";
+    deserializeJson(doc, json);
   }
-  deserializeJson(doc, json);
   return doc;
 }
 
 StaticJsonDocument<200> getPumpData() {
   StaticJsonDocument<200> doc;
-  File file = SD.open("pumps.txt");
-  String json = "";
-  if (file) {
-    while (file.available()) {
-      json += file.read();
+  if (SD.exists("pumps.txt")) {
+    File file = SD.open("pumps.txt");
+    String json = "";
+    if (file) {
+      while (file.available()) {
+        json += file.read();
+      }
+      file.close();
     }
-    file.close();
+    deserializeJson(doc, json);
+  } else {
+    String json = "[]";
+    deserializeJson(doc, json);
   }
-  deserializeJson(doc, json);
   return doc;
 }
 
@@ -50,6 +60,7 @@ void updateDrinkData(StaticJsonDocument<500> doc) {
 //    const char* drinkStr = drink["name"];
 //    Serial.println(drinkStr);
 //  }
+    Serial.println("updating drinks sd");
     File file = SD.open("drinks.txt", FILE_WRITE);
     serializeJson(doc, file);
     file.close();
