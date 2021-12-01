@@ -181,6 +181,60 @@ void postPumps (Request &req, Response &res) {
 //    }
 }
 
+void makeDrink(Request &req, Response &res) {
+  Serial.print("make drink request");
+  
+  //setup response stuff
+  res.status(200);
+  res.set("Content-Type", "application/json");
+  res.println();
+  StaticJsonDocument<200> retDoc;
+  
+  //check if machine is busy. need to write this 
+  boolean busy = false;
+  if (busy){
+    deserializeJson(retDoc, "{\"success\":false,\"error\":\"The machine is currently busy\"}");
+    serializeJsonPretty(retDoc, *req.stream());
+    res.println();
+    res.flush();
+  } 
+  
+  //get recipe data 
+  StaticJsonDocument<500> drinkdoc;
+  deserializeJson(drinkdoc, *req.stream());
+  JsonObject recipe = drinkdoc["recipe"].as<JsonObject>();
+  
+  //get pump data
+  String pumps = "";
+  serializeJson(getPumpData(), pumps);
+  
+  //check if we can make the drink
+  boolean ok = true;
+  Serial.println(pumps);
+  for (JsonPair kv : recipe) {
+    Serial.println("loop");
+    String liquid = String(kv.key().c_str());
+    Serial.println(pumps.indexOf(liquid));
+    if (pumps.indexOf(liquid) < 0) {
+      ok = false;
+      break;
+    }
+    Serial.println(liquid);
+    String amount = kv.value().as<String>();
+    Serial.println(amount);
+  }
+  if (not ok){
+    deserializeJson(retDoc, "{\"success\":false,\"error\":\"Current pumps do not contain all necessary ingredients\"}");
+  } else{
+    deserializeJson(retDoc, "{\"success\":true,\"error\":\"\"}");
+    //send drink to drink machine
+  }
+  
+  serializeJsonPretty(retDoc, *req.stream());
+  res.println();
+  res.flush();
+}
+
 void getIndexPage() {
   Serial.println("Getting Heroku Index Page");
   WiFiClient client;
@@ -253,6 +307,7 @@ void setup() {
   app.get("/status", &getStatus);
   app.post("/drinks", &postDrinks);
   app.post("/pumps", &postPumps);
+  app.post("/make-drink", &makeDrink);
   server.begin();
 }
 
