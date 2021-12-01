@@ -34,43 +34,6 @@ void index(Request &req, Response &res) {
   res.status(200);
   res.set("Content-type", "text/html");
   res.println();
-//  res.println(
-//    "<!DOCTYPE html>\n"
-//    "<html lang='en'>\n"
-//      "<head>\n"
-//        "<style type='text/css'>\n"
-//            "html {\n"
-//                "overflow: auto;\n"
-//            "}\n"
-//            "html,\n"
-//            "body,\n"
-//            "div,\n"
-//            "iframe {\n"
-//                "margin: 0px;\n"
-//                "padding: 0px;\n"
-//                "height: 100%;\n"
-//                "border: none;\n"
-//            "}\n"
-//            "iframe {\n"
-//                "display: block;\n"
-//                "width: 100%;\n"
-//                "border: none;\n"
-//                "overflow-y: auto;\n"
-//                "overflow-x: hidden;\n"
-//            "}\n"
-//        "</style>\n"
-//        "<title>Party Time!</title>\n"
-//      "</head>\n"
-//      "<body>\n"
-//        "<iframe src='http://arduino-cocktail-maker.herokuapp.com/'\n"
-//            "frameborder='0'\n"
-//            "marginheight='0'\n"
-//            "marginwidth='0'\n"
-//            "width='100%'\n"
-//            "height='100%'\n" 
-//            "scrolling='auto'></iframe >\n"
-//      "</body>\n"
-//    "</html>\n");
     res.println(indexPage);
     res.println();
     res.flush();
@@ -171,11 +134,6 @@ void postPumps (Request &req, Response &res) {
     serializeJsonPretty(doc, *req.stream());
     res.println();
     res.flush();
-//    for (int i = 0; i < numDrinks; i++){
-//      String name = doc[i]["name"];
-//      String description = doc[i]["description"];
-//      return   
-//    }
 }
 
 void makeDrink(Request &req, Response &res) {
@@ -207,11 +165,8 @@ void makeDrink(Request &req, Response &res) {
   
   //check if we can make the drink
   boolean ok = true;
-  Serial.println(pumps);
   for (JsonPair kv : recipe) {
-    Serial.println("loop");
     String liquid = String(kv.key().c_str());
-    Serial.println(pumps.indexOf(liquid));
     if (pumps.indexOf(liquid) < 0) {
       ok = false;
       break;
@@ -308,13 +263,6 @@ void setup() {
   server.begin();
 }
 
-//void print_client(WiFiClient client){
-//    while (client.available()) {
-//      Serial.write(client.read());
-//    }
-//}
-
-
   
 void loop() {  
   WiFiClient client = server.available();
@@ -329,16 +277,4 @@ void loop() {
     }
   }
 }
-  
- 
-
-
-
-
-  
-
-//  if (client) {
-//    client.stop();
-//    Serial.println("stopped");
-//  }
     
