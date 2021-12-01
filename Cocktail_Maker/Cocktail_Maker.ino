@@ -1,5 +1,6 @@
 #include "Cocktail_Maker.h"
 
+state CURR_STATE = sSETUP;
 char ssid[] = "Sigma Basement";  // network SSID (name)
 char pass[] = "257basement"; // for networks that require a password
 //char ssid[] = "Brown-Guest";  // network SSID (name)
@@ -11,17 +12,18 @@ int status = WL_IDLE_STATUS;
 char heroku[] = "arduino-cocktail-maker.herokuapp.com";
 String indexPage = "";
 
-//
-//typedef struct ingredient_t{
-//  String liquid;
-//  float amount;
-//};
-//
-//typedef struct drink_t{
-//  String name;
-//  String description;
-//  //ingredient_t recipe[];
-//};
+
+//guard member variables
+
+boolean server_running = false;
+
+state_variables vars = {
+  MIXER_UP, //mixer pos
+  false, // mising
+  NULL, //pointer to recipe
+  0, //num pumps
+  false //stopped
+};
   
 WiFiServer server(80);
 Application app;
@@ -123,9 +125,11 @@ void postDrinks (Request &req, Response &res) {
 void postPumps (Request &req, Response &res) {
     StaticJsonDocument<1000> doc;
     deserializeJson(doc, *req.stream());
+    res.status(200);
+    
     Serial.println("postPumps");
     updatePumpData(doc);
-    res.status(200);
+    
     res.set("Content-Type", "application/json");
     res.set("Access-Control-Allow-Origin", "*");
     res.println();
@@ -138,7 +142,6 @@ void postPumps (Request &req, Response &res) {
 
 void makeDrink(Request &req, Response &res) {
   Serial.print("make drink request");
-  
   //setup response stuff
   res.status(200);
   res.set("Content-Type", "application/json");
@@ -146,40 +149,45 @@ void makeDrink(Request &req, Response &res) {
   StaticJsonDocument<200> retDoc;
   
   //check if machine is busy. need to write this 
-  boolean busy = false;
-  if (busy){
+
+  if (CURR_STATE != sREADY_TO_MAKE){
     deserializeJson(retDoc, "{\"success\":false,\"error\":\"The machine is currently busy\"}");
     serializeJsonPretty(retDoc, *req.stream());
     res.println();
     res.flush();
+    return;
   } 
   
   //get recipe data 
   StaticJsonDocument<500> drinkdoc;
   deserializeJson(drinkdoc, *req.stream());
-  JsonObject recipe = drinkdoc["recipe"].as<JsonObject>();
-  
-  //get pump data
-  String pumps = "";
-  serializeJson(getPumpData(), pumps);
-  
+  JsonObject drink_recipe = drinkdoc["recipe"].as<JsonObject>();
+
   //check if we can make the drink
   boolean ok = true;
-  for (JsonPair kv : recipe) {
+  ingredient ingredients[drink_recipe.size()];
+  int counter = 0;
+  for (JsonPair kv : drink_recipe) {
     String liquid = String(kv.key().c_str());
-    if (pumps.indexOf(liquid) < 0) {
+    String amount = kv.value().as<String>();
+    
+    int pump_num = get_pump_num(liquid);
+    if (pump_num < 0) {
       ok = false;
       break;
     }
-    Serial.println(liquid);
-    String amount = kv.value().as<String>();
-    Serial.println(amount);
+    ingredients[counter] = ingredient{pump_num, 1.1};
+     
   }
   if (not ok){
     deserializeJson(retDoc, "{\"success\":false,\"error\":\"Current pumps do not contain all necessary ingredients\"}");
   } else{
     deserializeJson(retDoc, "{\"success\":true,\"error\":\"\"}");
-    //send drink to drink machine
+    recipe r = {
+      *ingredients,
+    };
+    vars.curr_recipe = &r;
+    
   }
   
   serializeJsonPretty(retDoc, *req.stream());
@@ -227,16 +235,9 @@ void getIndexPage() {
   }
 }
   
-void setup() {
-  
-
-//  char json_drink[] = "[{\"name\":\"martini\",\"description\":\"it's a martini\"}]";
-//  drink_t drink = parseJSONdrinks(json_drink, 1);
-    
-                     
+void setup() {                 
   Serial.begin(9600);
   while(!Serial);
-//  Serial.println(SDCARD_SS_PIN);
   SDSetup();
   while (status != WL_CONNECTED) {
     Serial.print("Attempting to connect to: ");
@@ -261,20 +262,65 @@ void setup() {
   app.post("/pumps", &postPumps);
   app.post("/make-drink", &makeDrink);
   server.begin();
+  server_running = true;
+
+  
 }
 
   
 void loop() {  
+  CURR_STATE = update_fsm(CURR_STATE, server_running, vars);
+  
   WiFiClient client = server.available();
   if (client) {
-    
      if (client.connected()) {
       Serial.println("new client");
       app.process(&client);
       Serial.println("client handled");
       client.stop();
-      
     }
+  }else{
+    delay(10);
   }
 }
+
+
+
+
+// mechanical stuff
+
+void start_pumps(recipe *ordered_recipe){
+
+ 
+  
+  //start each pump, start service routine to stop that pump after x amount of time
+  //in the ISR decrement vars.num_pumps_running
+
+  //for now:
+  vars.num_pumps_running = 4;
+  vars.curr_recipe = NULL;
+  delay(6000);
+  vars.num_pumps_running = 0;
+ 
+}
+
+void change_mixer_position(mixer_position new_pos){
+  if (new_pos == MIXER_UP){
+    // send mixer up
+    vars.mixer_pos = new_pos;
+  } else {
+    //send mixer down
+    vars.mixer_pos = new_pos;
+  }
+}
+
+void start_mixer(){
+  vars.mixing = true;
+  delay(5000);
+  vars.mixing = false;
+  
+}
+
+
+
     
