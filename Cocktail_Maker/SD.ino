@@ -22,11 +22,10 @@ StaticJsonDocument<200> getDrinkData() {
     String json = "";
     if (file) {
       while (file.available()) {
-        json += file.read();
+        json += (char) file.read();
       }
       file.close();
    }
-   Serial.println(json);
    deserializeJson(doc, json);
   } else {
     String json = "[]";
@@ -42,7 +41,7 @@ StaticJsonDocument<200> getPumpData() {
     String json = "";
     if (file) {
       while (file.available()) {
-        json += file.read();
+        json += (char) file.read();
       }
       file.close();
     }
@@ -55,15 +54,19 @@ StaticJsonDocument<200> getPumpData() {
 }
 
 void updateDrinkData(StaticJsonDocument<500> doc) {
-//  JsonArray drinks = doc.as<JsonArray>();
-//  for (JsonObject drink : drinks) {
-//    const char* drinkStr = drink["name"];
-//    Serial.println(drinkStr);
-//  }
-    Serial.println("updating drinks sd");
-    File file = SD.open("drinks.txt", FILE_WRITE);
-    serializeJson(doc, file);
-    file.close();
+  JsonArray drinks = doc.as<JsonArray>();
+  for (JsonObject drink : drinks) {
+    const char* drinkStr = drink["name"];
+    const char* descriptionStr = drink["description"];
+    Serial.println(drinkStr);
+    Serial.println(descriptionStr);
+  }
+  Serial.println("updating drinks sd");
+  SD.remove("drinks.txt");
+  File file = SD.open("drinks.txt", FILE_WRITE);
+  serializeJson(doc, file);
+  serializeJson(doc, Serial);
+  file.close();
     
 
 }
