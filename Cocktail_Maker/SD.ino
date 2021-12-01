@@ -1,30 +1,58 @@
 #include <aWOT.h>
 #include <ArduinoJson.h>
+#include <SPI.h>
+#include <SD.h>
 
-StaticJsonDocument<10000> getDrinkData() {
-  StaticJsonDocument<10000> doc;
-  deserializeJson(doc, "[{\"name\":\"John Smith\",\"description\":\"desc\",\"recipe\":{\"ingredient1\":\"amount1\"}},"
-                       "{\"name\":\"Drink 2\",\"description\":\"description 2\",\"recipe\":{\"ing2\":\"amount2\"}}]");
+
+void SDSetup () {
+  Serial.begin(9600);
+  while (!Serial) { 
+  }
+  Serial.print("Initializing SD card...");
+  if (!SD.begin(10)) {
+  Serial.println("initialization failed!");
+  }
+  Serial.println("initialization done.");
+}
+
+
+StaticJsonDocument<200> getDrinkData() {
+  StaticJsonDocument<200> doc;
+  File file = SD.open("drinks.txt");
+  String json = "";
+  if (file) {
+    while (file.available()) {
+      json += file.read();
+    }
+    file.close();
+  }
+  deserializeJson(doc, json);
   return doc;
 }
 
-StaticJsonDocument<10000> getPumpData() {
-  StaticJsonDocument<10000> doc;
-  deserializeJson(doc, "[\"pump1drink\",\"pump2drink\"]");
+StaticJsonDocument<200> getPumpData() {
+  StaticJsonDocument<200> doc;
+  File file = SD.open("pumps.txt");
+  String json = "";
+  if (file) {
+    while (file.available()) {
+      json += file.read();
+    }
+    file.close();
+  }
+  deserializeJson(doc, json);
   return doc;
 }
 
-void updateDrinkData(StaticJsonDocument<500> doc) {\
-  JsonArray drinks = doc.as<JsonArray>();
-  for (JsonObject drink : drinks) {
-    const char* drinkStr = drink["name"];
-    Serial.println(drinkStr);
-  }
-}
+void updateDrinkData(StaticJsonDocument<500> doc) {
+//  JsonArray drinks = doc.as<JsonArray>();
+//  for (JsonObject drink : drinks) {
+//    const char* drinkStr = drink["name"];
+//    Serial.println(drinkStr);
+//  }
+    File file = SD.open("drinks.txt", FILE_WRITE);
+    serializeJson(doc, file);
+    file.close();
+    
 
-void updatePumpData(StaticJsonDocument<500> doc) {\
-  JsonArray pumps = doc.as<JsonArray>();
-  for (JsonVariant pump : pumps) {
-    Serial.println(pump.as<const char*>());
-  }
 }
