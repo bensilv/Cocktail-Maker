@@ -1,7 +1,4 @@
-#include <aWOT.h>
-#include <ArduinoJson.h>
-#include <SPI.h>
-#include <SD.h>
+
 
 
 void SDSetup () {

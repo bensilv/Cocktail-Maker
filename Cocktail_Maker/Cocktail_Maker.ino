@@ -1,7 +1,4 @@
 #include "Cocktail_Maker.h"
-#include <WiFi101.h>
-#include <aWOT.h>
-#include <ArduinoJson.h>
 
 char ssid[] = "Sigma Basement";  // network SSID (name)
 char pass[] = "257basement"; // for networks that require a password
