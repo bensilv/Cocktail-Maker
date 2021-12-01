@@ -6,14 +6,21 @@
 
 
 typedef enum {
-  sDISP_COUNTDOWN = 1,
-  sWAIT_AFTER_ROT = 2,
-  sMOV = 3,
-  sWAIT_AFTER_MOV = 4,
-  sROT = 5,
-  sWAIT_FOR_BUT = 6,
-  sGAME_OVER = 7,
+  sSETUP = 1,
+  sREADY_TO_MAKE = 2,
+  sPUMPING = 3,
+  sMIXER_LOWERING = 4,
+  sMIXING = 5,
+  sMIXER_RAISING = 6,
+  sALL_STOP = 7,
 } state;
+
+typedef enum {
+  MIXER_UP = 1,
+  MIXER_DOWN = 2,
+  
+}mixer_position;
+
 
 typedef struct {
   int pump;
@@ -26,8 +33,20 @@ typedef struct {
 } recipe;
 
 
+typedef struct {
+  mixer_position mixer_pos;
+  boolean mixing;
+  recipe *curr_recipe;
+  int num_pumps_running;
+  boolean stopped;
+}state_variables;
+
+
 StaticJsonDocument<1000> getDrinkData();
 StaticJsonDocument<1000> getPumpData();
 
 void updateDrinkData(StaticJsonDocument<1000> drinks);
 void SDSetup ();
+state update_fsm(state cur_state, boolean server_running);
+void start_pumps(recipe ordered_recipe);
+int get_pump_num (String ingredient);
