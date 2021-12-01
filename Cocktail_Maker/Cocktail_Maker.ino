@@ -1,30 +1,36 @@
+#include "Cocktail_Maker.h"
 #include <WiFi101.h>
 #include <aWOT.h>
+#include <ArduinoJson.h>
 
 //char ssid[] = "Sigma Basement";  // network SSID (name)
 //char pass[] = "257basement"; // for networks that require a password
-char ssid[] = "Brown-Guest";  // network SSID (name)
-char pass[] = ""; // for networks that require a password
+//char ssid[] = "Brown-Guest";  // network SSID (name)
+//char pass[] = ""; // for networks that require a password
+char ssid[] = "Dumplings";  // network SSID (name)
+char pass[] = "dicksonthewall"; // for networks that require a password
 int status = WL_IDLE_STATUS;
+
+
+typedef struct ingredient_t{
+  String liquid;
+  float amount;
+};
+
+typedef struct drink_t{
+  String name;
+  String description;
+  //ingredient_t recipe[];
+};
   
 WiFiServer server(80);
 Application app;
-  
-void index(Request &req, Response &res) {
-  res.status(200);
-  res.set("Content-type", "text/html");
-  res.println();
-  res.print("Hello World!");
-  res.println();
-  res.flush();
-  //client.stop();
-}
 
 void fav(Request &req, Response &res) {
   Serial.println("favicon handler");
 }
 
-void react(Request &req, Response &res) {
+void index(Request &req, Response &res) {
   res.status(200);
   res.set("Content-type", "text/html");
   res.println();
@@ -32,26 +38,38 @@ void react(Request &req, Response &res) {
     "<!DOCTYPE html>\n"
     "<html lang='en'>\n"
       "<head>\n"
-        "<script>\n"
-          "function openTest() {\n"
-            "window.open('http://' + window.location.hostname + '/test', '_self', false)\n"
-          "}\n"
-        "</script>\n"
-        "<base href='https://intense-development-app.herokuapp.com/'/>"
-        "<meta charset='utf-8' />\n"
-        "<link rel='icon' href='/favicon.ico' />\n"
-        "<meta name='viewport' content='width=device-width, initial-scale=1' />\n"
-        "<meta name='theme-color' content='#000000' />\n"
-        "<meta name='description' content='Web site created using create-react-app' />\n"
-        "<link rel='apple-touch-icon' href='/logo192.png' />\n"
-        "<link rel='manifest' href='/manifest.json' />\n"
-        "<title>Camera Store</title>\n"
+        "<style type='text/css'>\n"
+            "html {\n"
+                "overflow: auto;\n"
+            "}\n"
+            "html,\n"
+            "body,\n"
+            "div,\n"
+            "iframe {\n"
+                "margin: 0px;\n"
+                "padding: 0px;\n"
+                "height: 100%;\n"
+                "border: none;\n"
+            "}\n"
+            "iframe {\n"
+                "display: block;\n"
+                "width: 100%;\n"
+                "border: none;\n"
+                "overflow-y: auto;\n"
+                "overflow-x: hidden;\n"
+            "}\n"
+        "</style>\n"
+        "<title>Party Time!</title>\n"
       "</head>\n"
       "<body>\n"
-        "<button type='button' onclick='openTest()'>Test</button>\n"        
-        "<noscript>You need to enable JavaScript to run this app.</noscript>\n"
-        "<div id='root'></div>\n"
-      "<script src='/static/js/bundle.js'></script><script src='/static/js/0.chunk.js'></script><script src='/static/js/main.chunk.js'></script></body>\n"
+        "<iframe src='https://arduino-cocktail-maker.herokuapp.com/'\n"
+            "frameborder='0'\n"
+            "marginheight='0'\n"
+            "marginwidth='0'\n"
+            "width='100%'\n"
+            "height='100%'\n" 
+            "scrolling='auto'></iframe >\n"
+      "</body>\n"
     "</html>\n");
     res.println();
     res.flush();
@@ -71,14 +89,41 @@ void test(Request &req, Response &res) {
   Serial.println("done");
   
 }
+
+void getDrinks(Request &req, Response &res) {
+  Serial.print("getting drinks");
+  res.status(200);
+  res.set("Content-type", "application/json");
+  res.println();
+  serializeJsonPretty(getDrinkData(), *req.stream());
+  res.println();
+  res.flush();
+}
+//
+//void parseJSONdrinks (char json[], int numDrinks) {
+//    StaticJsonDocument<500> doc;
+//    DeserializationError error = deserializeJson(doc, json);
+//    for (int i = 0; i < numDrinks; i++){
+//      String name = doc[i]["name"];
+//      String description = doc[i]["description"];
+//      return   
+//    }
+//}
   
 void setup() {
+
+//  char json_drink[] = "[{\"name\":\"martini\",\"description\":\"it's a martini\"}]";
+//  drink_t drink = parseJSONdrinks(json_drink, 1);
+    
+                     
+
+  
   Serial.begin(9600);
   while(!Serial);
   while (status != WL_CONNECTED) {
     Serial.print("Attempting to connect to: ");
     Serial.println(ssid);
-    status = WiFi.begin(ssid); // WiFi.begin(ssid, pass) for password
+    status = WiFi.begin(ssid, pass); // WiFi.begin(ssid, pass) for password
     delay(1000);
   }
   Serial.println("Connected!");
@@ -88,9 +133,9 @@ void setup() {
   Serial.println(buffer);
 
   app.get("/", &index);
-  app.get("/react", &react);
   app.get("/test", &test);
   app.get("/favicon.ico", &fav);
+  app.get("/get-drinks", &getDrinks);
   server.begin();
 }
 
