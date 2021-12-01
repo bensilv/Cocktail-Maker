@@ -62,7 +62,7 @@ void index(Request &req, Response &res) {
         "<title>Party Time!</title>\n"
       "</head>\n"
       "<body>\n"
-        "<iframe src='https://arduino-cocktail-maker.herokuapp.com/'\n"
+        "<iframe src='http://arduino-cocktail-maker.herokuapp.com/'\n"
             "frameborder='0'\n"
             "marginheight='0'\n"
             "marginwidth='0'\n"
@@ -98,6 +98,7 @@ void getDrinks(Request &req, Response &res) {
   Serial.print("getting drinks");
   res.status(200);
   res.set("Content-type", "application/json");
+  res.set("Access-Control-Allow-Origin", "*");
   res.println();
   serializeJsonPretty(getDrinkData(), *req.stream());
   res.println();
@@ -109,6 +110,7 @@ void getPumps(Request &req, Response &res) {
   Serial.print("getting pumps");
   res.status(200);
   res.set("Content-type", "application/json");
+  res.set("Access-Control-Allow-Origin", "*");
   res.println();
   serializeJsonPretty(getPumpData(), *req.stream());
   res.println();
@@ -144,11 +146,34 @@ void postDrinks (Request &req, Response &res) {
     serializeJsonPretty(doc, *req.stream());
     res.println();
     res.flush();
-//    for (int i = 0; i < numDrinks; i++){
-//      String name = doc[i]["name"];
-//      String description = doc[i]["description"];
-//      return   
-//    }
+}
+
+void postPumps (Request &req, Response &res) {
+    StaticJsonDocument<500> doc;
+    deserializeJson(doc, *req.stream());
+    updatePumpData(doc);
+    res.status(200);
+    res.set("Content-Type", "application/json");
+    res.println();
+    StaticJsonDocument<200> retDoc;
+    deserializeJson(doc, "{\"success\":true,\"error\":\"\"}");
+    serializeJsonPretty(doc, *req.stream());
+    res.println();
+    res.flush();
+}
+
+void makeDrink (Request &req, Response &res) {
+    StaticJsonDocument<500> doc;
+    deserializeJson(doc, *req.stream());
+    updatePumpData(doc);
+    res.status(200);
+    res.set("Content-Type", "application/json");
+    res.println();
+    StaticJsonDocument<200> retDoc;
+    deserializeJson(doc, "{\"success\":true,\"error\":\"\"}");
+    serializeJsonPretty(doc, *req.stream());
+    res.println();
+    res.flush();
 }
   
 void setup() {
