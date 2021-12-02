@@ -5,8 +5,15 @@ state update_fsm(state cur_state, boolean server_running,
                 state_variables vars) {
                   
   state next_state;
+//  Serial.print("stopped: ");
+//  Serial.println(vars.stopped);
   if (vars.stopped == true){
-    Serial.println("stopping");
+    next_state = sALL_STOP;
+    if (cur_state != next_state) {
+      Serial.println(s2str(next_state));
+    }
+    digitalWrite(RED_LED, HIGH);
+    digitalWrite(GREEN_LED, LOW);
     return sALL_STOP;
   }
   
@@ -16,6 +23,8 @@ state update_fsm(state cur_state, boolean server_running,
       next_state = sREADY_TO_MAKE;
     } else {
       next_state = sSETUP;
+      digitalWrite(GREEN_LED, HIGH);
+      digitalWrite(RED_LED, LOW);
     }
     break;
   case sREADY_TO_MAKE:
@@ -27,10 +36,7 @@ state update_fsm(state cur_state, boolean server_running,
     }
     break;
   case sPUMPING:
-    Serial.print("num pumps running: ");
-    Serial.println(vars.num_pumps_running);
     if (vars.num_pumps_running == 0){
-      
       next_state = sMIXER_LOWERING;
       change_mixer_position(MIXER_DOWN);
     } else {
@@ -62,9 +68,12 @@ state update_fsm(state cur_state, boolean server_running,
     break;
   case sALL_STOP:
     if (vars.stopped == false){
-      return sREADY_TO_MAKE;
+      digitalWrite(GREEN_LED, HIGH);
+      digitalWrite(RED_LED, LOW);
+      next_state = sREADY_TO_MAKE;
     } else {
       next_state = sALL_STOP;
+      
     }
     break;
   }

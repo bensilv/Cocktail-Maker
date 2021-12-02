@@ -5,10 +5,8 @@ int get_pump_num (String ingredient){
   StaticJsonDocument<1000> pumpDoc = getPumpData();
   JsonArray pumpList = pumpDoc.as<JsonArray>();
   int i = 0;
-  Serial.println(pumpList.size());
   for (JsonVariant v : pumpList) {
     if (ingredient == v.as<String>()) {
-
       switch(i) {
         case 0: 
           return PUMP_ONE;
@@ -25,13 +23,4 @@ int get_pump_num (String ingredient){
     i++;
   }
   return -1;
-//  serializeJson(pumpDoc, pumps);
-//  Serial.print("GET PUMP NUM: ");
-//  Serial.println(pumps);
-//  Serial.print("INGREDIENT: ");
-//  Serial.println(ingredient);
-//
-//
-//
-//  return pumps.indexOf(ingredient);
 }
