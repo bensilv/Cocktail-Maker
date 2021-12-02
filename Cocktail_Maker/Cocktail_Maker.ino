@@ -193,14 +193,10 @@ void makeDrink(Request &req, Response &res) {
       ingredients,
       counter,
     };
-<<<<<<< HEAD
-    vars.curr_recipe = &r;
-    
-=======
+
     vars.curr_recipe = r;
     vars.recipe_loaded = true;
 
->>>>>>> 41a773d3a005192c41b13a3ac3d5412e53d7e178
   }
 
   serializeJsonPretty(retDoc, *req.stream());
@@ -250,10 +246,7 @@ void getIndexPage() {
 
 void setup() {
   Serial.begin(9600);
-<<<<<<< HEAD
   while(!Serial);
-=======
-
   //mechanical initializations
   pinMode(BUTTON, INPUT);
   pinMode(PUMP_ONE, OUTPUT);
@@ -267,9 +260,6 @@ void setup() {
   myservo.write(40);
   attachInterrupt(digitalPinToInterrupt(BUTTON), emergency_stop, RISING);
 
-  while (!Serial);
-
->>>>>>> 41a773d3a005192c41b13a3ac3d5412e53d7e178
   SDSetup();
   CURR_STATE = sSETUP;
   Serial.println(s2str(CURR_STATE));
@@ -321,24 +311,6 @@ void loop() {
 
 void start_pumps(recipe ordered_recipe) {
 
-<<<<<<< HEAD
-
-// mechanical stuff
-
-void start_pumps(recipe *ordered_recipe){
-
- 
-  
-  //start each pump, start service routine to stop that pump after x amount of time
-  //in the ISR decrement vars.num_pumps_running
-
-  //for now:
-  vars.num_pumps_running = 4;
-  vars.curr_recipe = NULL;
-  delay(6000);
-  vars.num_pumps_running = 0;
- 
-=======
   //start each pump, start service routine to stop that pump after x amount of time
   //in the ISR decrement vars.num_pumps_running
 
@@ -353,7 +325,6 @@ void start_pumps(recipe *ordered_recipe){
     start_pump(ing.pump, ing.amount);
     vars.num_pumps_running--;
   }
->>>>>>> 41a773d3a005192c41b13a3ac3d5412e53d7e178
 }
 
 void change_mixer_position(mixer_position new_pos) {
@@ -370,11 +341,6 @@ void change_mixer_position(mixer_position new_pos) {
 void start_mixer() {
   if (vars.stopped) return;
   vars.mixing = true;
-<<<<<<< HEAD
-  delay(5000);
-  vars.mixing = false;
-  
-=======
   analogWrite(DC_MOTOR, 200);
   delay_helper(1000);
   analogWrite(DC_MOTOR, 0);
@@ -390,7 +356,6 @@ void start_pump(int pump, float amount) {
   //call ounces_to_seconds(amount) and pass to delay
   delay_helper(2000);
   digitalWrite(pump, LOW);
->>>>>>> 41a773d3a005192c41b13a3ac3d5412e53d7e178
 }
 
 

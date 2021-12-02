@@ -64,3 +64,9 @@ state update_fsm(state cur_state, boolean server_running);
 char* s2str(state s);
 void start_pumps(recipe ordered_recipe);
 int get_pump_num (String ingredient);
+
+void setup_clock_watchdog();
+void start_pump_clock(int pumpPort, int dur_millis);
+void petWatchdog();
+void TC3_Handler();
+void WDT_Handler();
