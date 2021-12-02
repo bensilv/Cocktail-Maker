@@ -1,12 +1,14 @@
 #include "Cocktail_Maker.h"
 
 state CURR_STATE = sSETUP;
-char ssid[] = "Sigma Basement";  // network SSID (name)
-char pass[] = "257basement"; // for networks that require a password
+//char ssid[] = "Sigma Basement";  // network SSID (name)
+//char pass[] = "257basement"; // for networks that require a password
 //char ssid[] = "Brown-Guest";  // network SSID (name)
 //char pass[] = ""; // for networks that require a password
 //char ssid[] = "Dumplings";  // network SSID (name)
 //char pass[] = "dicksonthewall"; // for networks that require a password
+char ssid[] = "rufus";  // network SSID (name)
+char pass[] = "ruufuuss"; // for networks that require a password
 int status = WL_IDLE_STATUS;
 
 char heroku[] = "arduino-cocktail-maker.herokuapp.com";
@@ -91,7 +93,8 @@ void getStatus(Request &req, Response &res) {
   res.set("Access-Control-Allow-Origin", "*");
   res.println();
   StaticJsonDocument<200> doc;
-  deserializeJson(doc, "{\"status\":\"Ready to Make\"}");
+  doc["status"] = s2str(CURR_STATE);
+//  Serial.println((int) CURR_STATE);
   serializeJsonPretty(doc, *req.stream());
   res.println();
   res.flush();
@@ -141,12 +144,7 @@ void postPumps (Request &req, Response &res) {
 }
 
 void makeDrink(Request &req, Response &res) {
-<<<<<<< HEAD
   Serial.println("make drink request");
-  
-=======
-  Serial.print("make drink request");
->>>>>>> c5d9f3660f8d448542535887281eefd9a0d343c1
   //setup response stuff
   res.status(200);
   res.set("Content-Type", "application/json");
@@ -244,6 +242,8 @@ void setup() {
   Serial.begin(9600);
   while(!Serial);
   SDSetup();
+  CURR_STATE = sSETUP;
+  Serial.println(s2str(CURR_STATE));
   while (status != WL_CONNECTED) {
     Serial.print("Attempting to connect to: ");
     Serial.println(ssid);
@@ -275,7 +275,6 @@ void setup() {
   
 void loop() {  
   CURR_STATE = update_fsm(CURR_STATE, server_running, vars);
-  
   WiFiClient client = server.available();
   if (client) {
      if (client.connected()) {

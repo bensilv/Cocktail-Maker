@@ -48,5 +48,6 @@ StaticJsonDocument<1000> getPumpData();
 void updateDrinkData(StaticJsonDocument<1000> drinks);
 void SDSetup ();
 state update_fsm(state cur_state, boolean server_running);
+char* s2str(state s);
 void start_pumps(recipe ordered_recipe);
 int get_pump_num (String ingredient);
