@@ -5,7 +5,7 @@ void SDSetup () {
   Serial.print("Initializing SD card...");
 //  pinMode(4, OUTPUT); // change this to 53 on a mega  // don't follow this!!
 //  digitalWrite(4, HIGH); // Add this line
-  if (!SD.begin(4)) {
+  if (!SD.begin(4))      {
   Serial.println("initialization failed!");
   }
   Serial.println("initialization done.");

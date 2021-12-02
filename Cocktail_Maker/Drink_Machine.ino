@@ -19,7 +19,7 @@ state update_fsm(state cur_state, boolean server_running,
     }
     break;
   case sREADY_TO_MAKE:
-    if (vars.curr_recipe != NULL){
+    if (vars.recipe_loaded){
       start_pumps(vars.curr_recipe);
       next_state = sPUMPING;
     } else {
@@ -27,7 +27,10 @@ state update_fsm(state cur_state, boolean server_running,
     }
     break;
   case sPUMPING:
+    Serial.print("num pumps running: ");
+    Serial.println(vars.num_pumps_running);
     if (vars.num_pumps_running == 0){
+      
       next_state = sMIXER_LOWERING;
       change_mixer_position(MIXER_DOWN);
     } else {

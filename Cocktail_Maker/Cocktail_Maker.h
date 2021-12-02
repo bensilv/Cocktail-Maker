@@ -4,6 +4,15 @@
 #include <SPI.h>
 #include <SD.h>
 
+typedef enum {
+  PUMP_ONE = 11,
+  PUMP_TWO = 12,
+  PUMP_THREE = 6,
+  PUMP_FOUR = 7,
+  DC_MOTOR = 3,
+  SERVO = 2,
+  BUTTON = 5,
+  } pin;
 
 typedef enum {
   sSETUP = 1,
@@ -29,14 +38,15 @@ typedef struct {
 
 
 typedef struct {
-  ingredient ingredients[];
+  ingredient ingredients[6];
 } recipe;
 
 
 typedef struct {
   mixer_position mixer_pos;
   boolean mixing;
-  recipe *curr_recipe;
+  boolean recipe_loaded;
+  recipe curr_recipe;
   int num_pumps_running;
   boolean stopped;
 }state_variables;
