@@ -6,7 +6,6 @@ state update_fsm(state cur_state, boolean server_running,
                   
   state next_state;
   if (vars.stopped == true){
-    Serial.println("stopping");
     return sALL_STOP;
   }
   
@@ -27,10 +26,7 @@ state update_fsm(state cur_state, boolean server_running,
     }
     break;
   case sPUMPING:
-    Serial.print("num pumps running: ");
-    Serial.println(vars.num_pumps_running);
     if (vars.num_pumps_running == 0){
-      
       next_state = sMIXER_LOWERING;
       change_mixer_position(MIXER_DOWN);
     } else {

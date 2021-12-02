@@ -38,7 +38,8 @@ typedef struct {
 
 
 typedef struct {
-  ingredient ingredients[6];
+  ingredient *ingredients;
+  int num_ingredients;
 } recipe;
 
 

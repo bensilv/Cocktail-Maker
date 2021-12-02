@@ -28,7 +28,7 @@ state_variables vars = {
   0, //num pumps
   false //stopped
 };
-  
+
 WiFiServer server(80);
 Application app;
 
@@ -40,10 +40,10 @@ void index(Request &req, Response &res) {
   res.status(200);
   res.set("Content-type", "text/html");
   res.println();
-    res.println(indexPage);
-    res.println();
-    res.flush();
-    //client.stop();
+  res.println(indexPage);
+  res.println();
+  res.flush();
+  //client.stop();
 }
 
 void test(Request &req, Response &res) {
@@ -57,12 +57,12 @@ void test(Request &req, Response &res) {
 
   //client.stop();
   Serial.println("done");
-  
+
 }
 
 /**
- * Get Requests
- */
+   Get Requests
+*/
 
 void getDrinks(Request &req, Response &res) {
   Serial.print("getting drinks");
@@ -96,74 +96,68 @@ void getStatus(Request &req, Response &res) {
   res.println();
   StaticJsonDocument<200> doc;
   doc["status"] = s2str(CURR_STATE);
-//  Serial.println((int) CURR_STATE);
+  //  Serial.println((int) CURR_STATE);
   serializeJsonPretty(doc, *req.stream());
   res.println();
   res.flush();
 }
 
 /**
- * Post Requests
- */
+   Post Requests
+*/
 
 void postDrinks (Request &req, Response &res) {
-    StaticJsonDocument<1000> doc;
-    deserializeJson(doc, *req.stream());
-    Serial.println("postDrinks");
-    updateDrinkData(doc);
-    res.status(200);
-    res.set("Content-Type", "application/json");
-    res.set("Access-Control-Allow-Origin", "*");
-    res.println();
-    StaticJsonDocument<200> retDoc;
-    deserializeJson(doc, "{\"success\":true,\"error\":\"\"}");
-    serializeJsonPretty(doc, *req.stream());
-    res.println();
-    res.flush();
-//    for (int i = 0; i < numDrinks; i++){
-//      String name = doc[i]["name"];
-//      String description = doc[i]["description"];
-//      return   
-//    }
+  StaticJsonDocument<1000> doc;
+  deserializeJson(doc, *req.stream());
+  Serial.println("postDrinks");
+  updateDrinkData(doc);
+  res.status(200);
+  res.set("Content-Type", "application/json");
+  res.set("Access-Control-Allow-Origin", "*");
+  res.println();
+  StaticJsonDocument<200> retDoc;
+  deserializeJson(doc, "{\"success\":true,\"error\":\"\"}");
+  serializeJsonPretty(doc, *req.stream());
+  res.println();
+  res.flush();
 }
 
 void postPumps (Request &req, Response &res) {
-    StaticJsonDocument<1000> doc;
-    deserializeJson(doc, *req.stream());
-    res.status(200);
-    
-    Serial.println("postPumps");
-    updatePumpData(doc);
-    
-    res.set("Content-Type", "application/json");
-    res.set("Access-Control-Allow-Origin", "*");
-    res.println();
-    StaticJsonDocument<200> retDoc;
-    deserializeJson(doc, "{\"success\":true,\"error\":\"\"}");
-    serializeJsonPretty(doc, *req.stream());
-    res.println();
-    res.flush();
+  StaticJsonDocument<1000> doc;
+  deserializeJson(doc, *req.stream());
+  res.status(200);
+
+  Serial.println("postPumps");
+  updatePumpData(doc);
+
+  res.set("Content-Type", "application/json");
+  res.set("Access-Control-Allow-Origin", "*");
+  res.println();
+  StaticJsonDocument<200> retDoc;
+  deserializeJson(doc, "{\"success\":true,\"error\":\"\"}");
+  serializeJsonPretty(doc, *req.stream());
+  res.println();
+  res.flush();
 }
 
 void makeDrink(Request &req, Response &res) {
-  Serial.println("make drink request");
   //setup response stuff
   res.status(200);
   res.set("Content-Type", "application/json");
   res.println();
   StaticJsonDocument<200> retDoc;
-  
-  //check if machine is busy. need to write this 
 
-  if (CURR_STATE != sREADY_TO_MAKE){
+  //check if machine is busy. need to write this
+
+  if (CURR_STATE != sREADY_TO_MAKE) {
     deserializeJson(retDoc, "{\"success\":false,\"error\":\"The machine is currently busy\"}");
     serializeJsonPretty(retDoc, *req.stream());
     res.println();
     res.flush();
     return;
-  } 
-  
-  //get recipe data 
+  }
+
+  //get recipe data
   StaticJsonDocument<500> drinkdoc;
   deserializeJson(drinkdoc, *req.stream());
   JsonObject drink_recipe = drinkdoc["recipe"].as<JsonObject>();
@@ -175,10 +169,8 @@ void makeDrink(Request &req, Response &res) {
   for (JsonPair kv : drink_recipe) {
     String liquid = String(kv.key().c_str());
     String amount = kv.value().as<String>();
-    
+
     int pump_num = get_pump_num(liquid);
-    Serial.print("PIN NUM: ");
-    Serial.println(pump_num);
     if (pump_num < 0) {
       ok = false;
       break;
@@ -188,17 +180,19 @@ void makeDrink(Request &req, Response &res) {
     ingredients[counter] = ingredient{pump_num, 1.1};
     counter++;
   }
-  if (not ok){
+
+  if (not ok) {
     deserializeJson(retDoc, "{\"success\":false,\"error\":\"Current pumps do not contain all necessary ingredients\"}");
-  } else{
+  } else {
     deserializeJson(retDoc, "{\"success\":true,\"error\":\"\"}");
     recipe r = {
-      *ingredients,
+      ingredients,
+      counter,
     };
     vars.curr_recipe = r;
     vars.recipe_loaded = true;
   }
-  
+
   serializeJsonPretty(retDoc, *req.stream());
   res.println();
   res.flush();
@@ -236,15 +230,15 @@ void getIndexPage() {
         client.stop();
         clientRead = true;
         Serial.println("Heroku Index Page Loaded");
-//        Serial.println(indexPage);
+        //        Serial.println(indexPage);
       }
     }
   } else {
     Serial.println("Loading Heroku Failed");
   }
 }
-  
-void setup() {                 
+
+void setup() {
   Serial.begin(9600);
 
   //mechanical initializations
@@ -254,11 +248,11 @@ void setup() {
   pinMode(PUMP_THREE, OUTPUT);
   pinMode(PUMP_FOUR, OUTPUT);
   pinMode(DC_MOTOR, OUTPUT);
-  myservo.attach(SERVO); 
+  myservo.attach(SERVO);
   myservo.write(40);
-  
-  while(!Serial);
-  
+
+  while (!Serial);
+
   SDSetup();
   CURR_STATE = sSETUP;
   Serial.println(s2str(CURR_STATE));
@@ -287,67 +281,48 @@ void setup() {
   server.begin();
   server_running = true;
 
-  
+
 }
 
-  
-void loop() {  
+
+void loop() {
   CURR_STATE = update_fsm(CURR_STATE, server_running, vars);
   WiFiClient client = server.available();
   if (client) {
-     if (client.connected()) {
+    if (client.connected()) {
       Serial.println("new client");
       app.process(&client);
       Serial.println("client handled");
       client.stop();
     }
-  }else{
+  } else {
     delay(10);
   }
 }
 
+/////////////////////MECHANICS///////////////////////
 
+void start_pumps(recipe ordered_recipe) {
 
-
-// mechanical stuff
-
-void start_pumps(recipe ordered_recipe){
- 
   //start each pump, start service routine to stop that pump after x amount of time
   //in the ISR decrement vars.num_pumps_running
-  
-   
+
+
   //for now:
-  vars.num_pumps_running = sizeof(ordered_recipe.ingredients)/sizeof(ingredient);
+  vars.num_pumps_running = ordered_recipe.num_ingredients;
   vars.recipe_loaded = false;
-  Serial.println("RECIPE 2: ");
-  Serial.println(sizeof(ordered_recipe.ingredients));
-  Serial.println(sizeof(ingredient));
 
   //start pumps
-    for (int i=0; i<sizeof(ordered_recipe.ingredients)/sizeof(ingredient); i++) {
+  for (int i = 0; i < ordered_recipe.num_ingredients; i++) {
     ingredient ing = ordered_recipe.ingredients[i];
     start_pump(ing.pump, ing.amount);
     vars.num_pumps_running--;
-    Serial.print("i: ");
-     Serial.println(i);
   }
-  Serial.println("broke out of for loop");
-//  for (int i=0; i<sizeof(ordered_recipe->ingredients)/sizeof(ingredient); i++) {
-//    ingredient ing = ordered_recipe->ingredients[i];
-//    start_pump(ing.pump, ing.amount);
-//    vars.num_pumps_running--;
-//
-//  }
-
-//for testing:
-//  delay(6000);
-//  vars.num_pumps_running = 0;
- 
 }
 
-void change_mixer_position(mixer_position new_pos){
-  if (new_pos == MIXER_UP){
+void change_mixer_position(mixer_position new_pos) {
+  if (vars.stopped) return;
+  if (new_pos == MIXER_UP) {
     // send mixer up
     myservo.write(40);
     delay(1000);
@@ -360,26 +335,24 @@ void change_mixer_position(mixer_position new_pos){
   }
 }
 
-void start_mixer(){
+void start_mixer() {
+  if (vars.stopped) return;
   vars.mixing = true;
   analogWrite(DC_MOTOR, 200);
   delay(1000);
   analogWrite(DC_MOTOR, 0);
   delay(1000);
-  vars.mixing = false; 
+  vars.mixing = false;
 }
 
 
 
 void start_pump(int pump, float amount) {
-  Serial.print("PUMPING PUMP #");
-  Serial.println(pump);
+  if (vars.stopped) return;
   digitalWrite(pump, HIGH);
   //call ounces_to_seconds(amount) and pass to delay
   delay(2000);
   digitalWrite(pump, LOW);
-  Serial.print("DONE PUMPING #");
-  Serial.println(pump);
 }
 
 float ounces_to_seconds(float amount) { //note: amount is in ounces
@@ -388,4 +361,26 @@ float ounces_to_seconds(float amount) { //note: amount is in ounces
 }
 
 
-    
+void emergency_stop() {
+  if (vars.stopped == true) {
+    reset_state();
+  } else {
+    //turn off all pumps, turn off motor + servo
+    analogWrite(DC_MOTOR, 0);
+    digitalWrite(PUMP_ONE, LOW);
+    digitalWrite(PUMP_TWO, LOW);
+    digitalWrite(PUMP_THREE, LOW);
+    digitalWrite(PUMP_FOUR, LOW);
+    myservo.write(40);
+    vars.mixer_pos = MIXER_UP;
+  }
+}
+
+void reset_state() {
+  vars.stopped = false;
+  vars.recipe_loaded = false;
+  vars.num_pumps_running = 0;
+  vars.mixing = false;
+  vars.mixer_pos = MIXER_UP;
+  myservo.write(40);
+}
