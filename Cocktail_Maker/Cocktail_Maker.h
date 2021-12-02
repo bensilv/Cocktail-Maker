@@ -12,6 +12,8 @@ typedef enum {
   DC_MOTOR = 3,
   SERVO = 2,
   BUTTON = A1,
+  GREEN_LED = 5,
+  RED_LED = 1,
   } pin;
 
 typedef enum {

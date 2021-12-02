@@ -12,6 +12,8 @@ state update_fsm(state cur_state, boolean server_running,
     if (cur_state != next_state) {
       Serial.println(s2str(next_state));
     }
+    digitalWrite(RED_LED, HIGH);
+    digitalWrite(GREEN_LED, LOW);
     return sALL_STOP;
   }
   
@@ -21,6 +23,8 @@ state update_fsm(state cur_state, boolean server_running,
       next_state = sREADY_TO_MAKE;
     } else {
       next_state = sSETUP;
+      digitalWrite(GREEN_LED, HIGH);
+      digitalWrite(RED_LED, LOW);
     }
     break;
   case sREADY_TO_MAKE:
@@ -64,9 +68,12 @@ state update_fsm(state cur_state, boolean server_running,
     break;
   case sALL_STOP:
     if (vars.stopped == false){
-      return sREADY_TO_MAKE;
+      digitalWrite(GREEN_LED, HIGH);
+      digitalWrite(RED_LED, LOW);
+      next_state = sREADY_TO_MAKE;
     } else {
       next_state = sALL_STOP;
+      
     }
     break;
   }

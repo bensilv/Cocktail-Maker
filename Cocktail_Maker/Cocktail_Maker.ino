@@ -257,6 +257,8 @@ void setup() {
   pinMode(PUMP_THREE, OUTPUT);
   pinMode(PUMP_FOUR, OUTPUT);
   pinMode(DC_MOTOR, OUTPUT);
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(RED_LED, OUTPUT);
   myservo.attach(SERVO);
   myservo.write(40);
   attachInterrupt(digitalPinToInterrupt(BUTTON), emergency_stop, RISING);
