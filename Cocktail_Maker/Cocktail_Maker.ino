@@ -1,6 +1,4 @@
 #include "Cocktail_Maker.h"
-#include <Servo.h>
-Servo myservo;
 
 state CURR_STATE = sSETUP;
 //char ssid[] = "Sigma Basement";  // network SSID (name)
@@ -177,16 +175,12 @@ void makeDrink(Request &req, Response &res) {
     String amount = kv.value().as<String>();
     
     int pump_num = get_pump_num(liquid);
-    Serial.print("PIN NUM: ");
-    Serial.println(pump_num);
     if (pump_num < 0) {
       ok = false;
       break;
     }
-
-    //TODO convert amount string to float
     ingredients[counter] = ingredient{pump_num, 1.1};
-    counter++;
+     
   }
   if (not ok){
     deserializeJson(retDoc, "{\"success\":false,\"error\":\"Current pumps do not contain all necessary ingredients\"}");
@@ -195,8 +189,8 @@ void makeDrink(Request &req, Response &res) {
     recipe r = {
       *ingredients,
     };
-    vars.curr_recipe = r;
-    vars.recipe_loaded = true;
+    vars.curr_recipe = &r;
+    
   }
   
   serializeJsonPretty(retDoc, *req.stream());
@@ -246,19 +240,7 @@ void getIndexPage() {
   
 void setup() {                 
   Serial.begin(9600);
-
-  //mechanical initializations
-  pinMode(BUTTON, INPUT);
-  pinMode(PUMP_ONE, OUTPUT);
-  pinMode(PUMP_TWO, OUTPUT);
-  pinMode(PUMP_THREE, OUTPUT);
-  pinMode(PUMP_FOUR, OUTPUT);
-  pinMode(DC_MOTOR, OUTPUT);
-  myservo.attach(SERVO); 
-  myservo.write(40);
-  
   while(!Serial);
-  
   SDSetup();
   CURR_STATE = sSETUP;
   Serial.println(s2str(CURR_STATE));
@@ -311,81 +293,38 @@ void loop() {
 
 // mechanical stuff
 
-void start_pumps(recipe ordered_recipe){
+void start_pumps(recipe *ordered_recipe){
+
  
+  
   //start each pump, start service routine to stop that pump after x amount of time
   //in the ISR decrement vars.num_pumps_running
-  
-   
+
   //for now:
-  vars.num_pumps_running = sizeof(ordered_recipe.ingredients)/sizeof(ingredient);
-  vars.recipe_loaded = false;
-  Serial.println("RECIPE 2: ");
-  Serial.println(sizeof(ordered_recipe.ingredients));
-  Serial.println(sizeof(ingredient));
-
-  //start pumps
-    for (int i=0; i<sizeof(ordered_recipe.ingredients)/sizeof(ingredient); i++) {
-    ingredient ing = ordered_recipe.ingredients[i];
-    start_pump(ing.pump, ing.amount);
-    vars.num_pumps_running--;
-    Serial.print("i: ");
-     Serial.println(i);
-  }
-  Serial.println("broke out of for loop");
-//  for (int i=0; i<sizeof(ordered_recipe->ingredients)/sizeof(ingredient); i++) {
-//    ingredient ing = ordered_recipe->ingredients[i];
-//    start_pump(ing.pump, ing.amount);
-//    vars.num_pumps_running--;
-//
-//  }
-
-//for testing:
-//  delay(6000);
-//  vars.num_pumps_running = 0;
+  vars.num_pumps_running = 4;
+  vars.curr_recipe = NULL;
+  delay(6000);
+  vars.num_pumps_running = 0;
  
 }
 
 void change_mixer_position(mixer_position new_pos){
   if (new_pos == MIXER_UP){
     // send mixer up
-    myservo.write(40);
-    delay(1000);
     vars.mixer_pos = new_pos;
   } else {
     //send mixer down
-    myservo.write(120);
-    delay(1000);
     vars.mixer_pos = new_pos;
   }
 }
 
 void start_mixer(){
   vars.mixing = true;
-  analogWrite(DC_MOTOR, 200);
-  delay(1000);
-  analogWrite(DC_MOTOR, 0);
-  delay(1000);
-  vars.mixing = false; 
+  delay(5000);
+  vars.mixing = false;
+  
 }
 
-
-
-void start_pump(int pump, float amount) {
-  Serial.print("PUMPING PUMP #");
-  Serial.println(pump);
-  digitalWrite(pump, HIGH);
-  //call ounces_to_seconds(amount) and pass to delay
-  delay(2000);
-  digitalWrite(pump, LOW);
-  Serial.print("DONE PUMPING #");
-  Serial.println(pump);
-}
-
-float ounces_to_seconds(float amount) { //note: amount is in ounces
-  //TO DO FILL IN CONVERSION OF HOW MANY SECONDS IS AN OUNCE PER TUBE
-  return amount; //temporary - should change to seconds
-}
 
 
     
