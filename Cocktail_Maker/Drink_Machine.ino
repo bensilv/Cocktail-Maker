@@ -5,7 +5,13 @@ state update_fsm(state cur_state, boolean server_running,
                 state_variables vars) {
                   
   state next_state;
+//  Serial.print("stopped: ");
+//  Serial.println(vars.stopped);
   if (vars.stopped == true){
+    next_state = sALL_STOP;
+    if (cur_state != next_state) {
+      Serial.println(s2str(next_state));
+    }
     return sALL_STOP;
   }
   

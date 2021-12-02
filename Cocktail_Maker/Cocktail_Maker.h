@@ -5,13 +5,13 @@
 #include <SD.h>
 
 typedef enum {
-  PUMP_ONE = 11,
-  PUMP_TWO = 12,
-  PUMP_THREE = 6,
-  PUMP_FOUR = 7,
+  PUMP_ONE = 6,
+  PUMP_TWO = 7,
+  PUMP_THREE = 11,
+  PUMP_FOUR = 12,
   DC_MOTOR = 3,
   SERVO = 2,
-  BUTTON = 5,
+  BUTTON = A1,
   } pin;
 
 typedef enum {

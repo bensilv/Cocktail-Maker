@@ -13,8 +13,11 @@ char ssid[] = "rufus";  // network SSID (name)
 char pass[] = "ruufuuss"; // for networks that require a password
 int status = WL_IDLE_STATUS;
 
+boolean stop_disabled = false;
+
 char heroku[] = "arduino-cocktail-maker.herokuapp.com";
 String indexPage = "";
+int last_emergency_stop = 0;
 
 
 //guard member variables
@@ -28,6 +31,10 @@ state_variables vars = {
   0, //num pumps
   false //stopped
 };
+
+
+
+
 
 WiFiServer server(80);
 Application app;
@@ -141,6 +148,7 @@ void postPumps (Request &req, Response &res) {
 }
 
 void makeDrink(Request &req, Response &res) {
+  
   //setup response stuff
   res.status(200);
   res.set("Content-Type", "application/json");
@@ -191,6 +199,7 @@ void makeDrink(Request &req, Response &res) {
     };
     vars.curr_recipe = r;
     vars.recipe_loaded = true;
+
   }
 
   serializeJsonPretty(retDoc, *req.stream());
@@ -250,6 +259,7 @@ void setup() {
   pinMode(DC_MOTOR, OUTPUT);
   myservo.attach(SERVO);
   myservo.write(40);
+  attachInterrupt(digitalPinToInterrupt(BUTTON), emergency_stop, RISING);
 
   while (!Serial);
 
@@ -339,9 +349,9 @@ void start_mixer() {
   if (vars.stopped) return;
   vars.mixing = true;
   analogWrite(DC_MOTOR, 200);
-  delay(1000);
+  delay_helper(1000);
   analogWrite(DC_MOTOR, 0);
-  delay(1000);
+
   vars.mixing = false;
 }
 
@@ -351,7 +361,7 @@ void start_pump(int pump, float amount) {
   if (vars.stopped) return;
   digitalWrite(pump, HIGH);
   //call ounces_to_seconds(amount) and pass to delay
-  delay(2000);
+  delay_helper(2000);
   digitalWrite(pump, LOW);
 }
 
@@ -362,15 +372,42 @@ float ounces_to_seconds(float amount) { //note: amount is in ounces
 
 
 void emergency_stop() {
+  for(int i=0; i<100; i++){
+    if (digitalRead(BUTTON) != 1){
+      return;
+    }
+  }
+  
+  Serial.println("not noise");
+  int curr_time = millis();
+  
+  if (curr_time - last_emergency_stop < 500 ){
+    Serial.print("curr time: ");
+    Serial.println(curr_time);
+    Serial.print("last time stopped: ");
+    Serial.println(last_emergency_stop);
+    return;
+  }
+  last_emergency_stop = curr_time;
+  
+  
   if (vars.stopped == true) {
+    Serial.println("EMERGENCY un-STOP");
     reset_state();
   } else {
+    vars.stopped = true;
+    Serial.println("EMERGENCY STOP");
     //turn off all pumps, turn off motor + servo
     analogWrite(DC_MOTOR, 0);
+   
     digitalWrite(PUMP_ONE, LOW);
+  
     digitalWrite(PUMP_TWO, LOW);
+    
     digitalWrite(PUMP_THREE, LOW);
+
     digitalWrite(PUMP_FOUR, LOW);
+
     myservo.write(40);
     vars.mixer_pos = MIXER_UP;
   }
@@ -383,4 +420,15 @@ void reset_state() {
   vars.mixing = false;
   vars.mixer_pos = MIXER_UP;
   myservo.write(40);
+}
+
+
+void delay_helper(int mils){
+  int start_time = millis();
+  while(millis() - start_time < mils){
+    if (digitalRead(BUTTON) == 1){
+      emergency_stop();
+    }  
+     
+  }
 }
