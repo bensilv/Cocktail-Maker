@@ -363,14 +363,12 @@ void start_pump(int pump, float amount) {
   if (vars.stopped) return;
   digitalWrite(pump, HIGH);
   //call ounces_to_seconds(amount) and pass to delay
-  delay_helper(2000);
+  delay_helper(ounces_to_seconds(amount));
   digitalWrite(pump, LOW);
 }
 
-float ounces_to_seconds(float amount) { //note: amount is in ounces
-  //TO DO FILL IN CONVERSION OF HOW MANY SECONDS IS AN OUNCE PER TUBE
-  
-  return amount/; //temporary - should change to seconds
+float ounces_to_seconds(float amount) { //note: amount is in ounces  
+  return amount*600;
 }
 
 
