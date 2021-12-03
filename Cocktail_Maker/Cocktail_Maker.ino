@@ -18,6 +18,7 @@ boolean stop_disabled = false;
 char heroku[] = "arduino-cocktail-maker.herokuapp.com";
 String indexPage = "";
 int last_emergency_stop = 0;
+num_pumps_finished = 0;
 
 
 //guard member variables
@@ -421,7 +422,7 @@ void emergency_stop() {
 void reset_state() {
   vars.stopped = false;
   vars.recipe_loaded = false;
-  vars.num_pumps_running = 0;
+  vars.num_pumps_finished = 0;
   vars.mixing = false;
   vars.mixer_pos = MIXER_UP;
   myservo.write(40);

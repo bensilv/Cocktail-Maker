@@ -57,6 +57,18 @@ void setup_clock_watchdog() {
 
 void start_pump_clock(int pumpPort, int dur_millis) {
   running_pump_pin = pumpPort;
+
+  // Turn off interrupts to TC3 on MC0 when configuring
+  TC3->COUNT16.INTENCLR.reg |= TC_INTENCLR_MC0;
+
+  TC3->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE | TC_CTRLA_PRESCALER_DIV2 | TC_CTRLA_WAVEGEN_MFRQ | TC_CTRLA_MODE_COUNT16 | TC_CTRLA_PRESCSYNC_PRESC;
+  while(TC3->COUNT16.STATUS.bit.SYNCBUSY);
+//  TC3->COUNT16.CC[0].reg = CLOCKFREQ / (2 * freq);
+  TC3->COUNT16.CC[0].reg = (CLOCKFREQ * dur_millis) / 2;
+  while(TC3->COUNT16.STATUS.bit.SYNCBUSY);
+
+  // Turn interrupts to TC3 on MC0 back on when done configuring
+  TC3->COUNT16.INTENSET.reg |= TC_INTENSET_MC0;
 }
 
 void petWatchdog() {
@@ -68,7 +80,13 @@ void TC3_Handler() {
   // Clear interrupt register flag
   // (register TC3->COUNT16.register_name.reg)
   TC3->COUNT16.INTFLAG.reg = TC_INTFLAG_MC0;
-  
+  // Disables TC timer and turns off output pin
+  // Reference TC with TC3->COUNT16.register_name.reg
+  TC3->COUNT16.INTENCLR.reg = TC_INTENCLR_MC0;
+  TC3->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
+  // Reference pin with PORT->Group[PORTB].register_name.reg
+  PORT->Group[PORTB].OUTCLR.reg = 1 << PB_PIN;
+  num_pumps_finished ++;
   // Turn off pump
   digitalWrite(running_pump_pin, LOW);
 }

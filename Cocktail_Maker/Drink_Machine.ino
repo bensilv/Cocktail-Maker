@@ -29,11 +29,16 @@ state update_fsm(state cur_state, boolean server_running,
     break;
   case sREADY_TO_MAKE:
     if (vars.recipe_loaded){
-      start_pumps(vars.curr_recipe);
-      next_state = sPUMPING;
+//      start_pumps(vars.curr_recipe);
+      next_state = sSTART_PUMP;
     } else {
       next_state = sREADY_TO_MAKE;
     }
+    break;
+  case sSTART_PUMP:
+    int curr_pump_pin = vars.curr_recipe.ingredients[vars.num_pumps_finished];
+    
+ 
     break;
   case sPUMPING:
     if (vars.num_pumps_running == 0){

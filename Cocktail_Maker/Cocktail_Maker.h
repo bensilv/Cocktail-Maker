@@ -19,11 +19,12 @@ typedef enum {
 typedef enum {
   sSETUP = 1,
   sREADY_TO_MAKE = 2,
-  sPUMPING = 3,
-  sMIXER_LOWERING = 4,
-  sMIXING = 5,
-  sMIXER_RAISING = 6,
-  sALL_STOP = 7,
+  sSTART_PUMP = 3,
+  sPUMPING = 4,
+  sMIXER_LOWERING = 5,
+  sMIXING = 6,
+  sMIXER_RAISING = 7,
+  sALL_STOP = 8,
 } state;
 
 typedef enum {
@@ -50,7 +51,7 @@ typedef struct {
   boolean mixing;
   boolean recipe_loaded;
   recipe curr_recipe;
-  int num_pumps_running;
+  int num_pumps_finished;
   boolean stopped;
 }state_variables;
 
@@ -64,3 +65,4 @@ state update_fsm(state cur_state, boolean server_running);
 char* s2str(state s);
 void start_pumps(recipe ordered_recipe);
 int get_pump_num (String ingredient);
+volatile int num_pumps_finished;
