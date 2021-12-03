@@ -41,9 +41,9 @@ void setup_clock_watchdog() {
   // Configure and enable WDT:
   // WDT->CONFIG.reg, WDT->EWCTRL.reg, WDT->CTRL.reg
   // PER 0x9 (reset every 4096 clock cycles = 4 seconds)
-  WDT->CONFIG.reg = WDT_CONFIG_PER(9);
+  WDT->CONFIG.reg = WDT_CONFIG_PER(11);
   // EWOFFSET: 0x8 (early warning happens every 2048 cycles = 2 seconds)
-  WDT->EWCTRL.reg = WDT_EWCTRL_EWOFFSET(8);
+  WDT->EWCTRL.reg = WDT_EWCTRL_EWOFFSET(10);
   WDT->CTRL.reg = WDT_CTRL_ENABLE; // enables watchdog.
   while (WDT->STATUS.bit.SYNCBUSY);
   

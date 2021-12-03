@@ -178,14 +178,16 @@ void makeDrink(Request &req, Response &res) {
     String liquid = String(kv.key().c_str());
     String amount = kv.value().as<String>();
 
+    float amount_cast = amount.toFloat(); 
+
     int pump_num = get_pump_num(liquid);
-    if (pump_num < 0) {
+    if (pump_num < 0 or amount_cast == 0) {
       ok = false;
       break;
     }
 
     //TODO convert amount string to float
-    ingredients[counter] = ingredient{pump_num, 1.1};
+    ingredients[counter] = ingredient{pump_num, amount_cast};
     counter++;
   }
 
