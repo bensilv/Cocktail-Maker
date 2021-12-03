@@ -276,6 +276,7 @@ void setup() {
   }
   Serial.println("Connected!");
   getIndexPage();
+  setup_clock_watchdog();
   IPAddress ip = WiFi.localIP();
   char buffer[40];
   sprintf(buffer, "Server is at: %d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
@@ -298,6 +299,7 @@ void setup() {
 
 
 void loop() {
+  petWatchdog();
   CURR_STATE = update_fsm(CURR_STATE, server_running, vars);
   WiFiClient client = server.available();
   if (client) {
