@@ -9,8 +9,8 @@ state CURR_STATE = sSETUP;
 //char pass[] = ""; // for networks that require a password
 //char ssid[] = "Dumplings";  // network SSID (name)
 //char pass[] = "dicksonthewall"; // for networks that require a password
-char ssid[] = "rufus";  // network SSID (name)
-char pass[] = "ruufuuss"; // for networks that require a password
+char ssid[] = "Fios-Tr7ML";  // network SSID (name)
+char pass[] = "dia393law47race"; // for networks that require a password
 int status = WL_IDLE_STATUS;
 
 boolean stop_disabled = false;
@@ -183,8 +183,10 @@ void makeDrink(Request &req, Response &res) {
       ok = false;
       break;
     }
+
+    //TODO convert amount string to float
     ingredients[counter] = ingredient{pump_num, 1.1};
-     
+    counter++;
   }
 
   if (not ok) {
@@ -195,7 +197,6 @@ void makeDrink(Request &req, Response &res) {
       ingredients,
       counter,
     };
-
     vars.curr_recipe = r;
     vars.recipe_loaded = true;
 
@@ -248,7 +249,7 @@ void getIndexPage() {
 
 void setup() {
   Serial.begin(9600);
-  while(!Serial);
+
   //mechanical initializations
   pinMode(BUTTON, INPUT);
   pinMode(PUMP_ONE, OUTPUT);
@@ -262,6 +263,8 @@ void setup() {
   myservo.write(40);
   attachInterrupt(digitalPinToInterrupt(BUTTON), emergency_stop, RISING);
 
+  while (!Serial);
+
   SDSetup();
   CURR_STATE = sSETUP;
   Serial.println(s2str(CURR_STATE));
@@ -273,7 +276,6 @@ void setup() {
   }
   Serial.println("Connected!");
   getIndexPage();
-  setup_clock_watchdog();
   IPAddress ip = WiFi.localIP();
   char buffer[40];
   sprintf(buffer, "Server is at: %d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
@@ -291,13 +293,11 @@ void setup() {
   server.begin();
   server_running = true;
 
-  
 
 }
 
 
 void loop() {
-  petWatchdog();
   CURR_STATE = update_fsm(CURR_STATE, server_running, vars);
   WiFiClient client = server.available();
   if (client) {
@@ -336,9 +336,13 @@ void change_mixer_position(mixer_position new_pos) {
   if (vars.stopped) return;
   if (new_pos == MIXER_UP) {
     // send mixer up
+    myservo.write(40);
+    delay(1000);
     vars.mixer_pos = new_pos;
   } else {
     //send mixer down
+    myservo.write(120);
+    delay(1000);
     vars.mixer_pos = new_pos;
   }
 }
@@ -363,6 +367,11 @@ void start_pump(int pump, float amount) {
   digitalWrite(pump, LOW);
 }
 
+float ounces_to_seconds(float amount) { //note: amount is in ounces
+  //TO DO FILL IN CONVERSION OF HOW MANY SECONDS IS AN OUNCE PER TUBE
+  
+  return amount/; //temporary - should change to seconds
+}
 
 
 void emergency_stop() {
