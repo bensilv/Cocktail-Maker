@@ -51,6 +51,7 @@ typedef struct {
   boolean mixing;
   boolean recipe_loaded;
   recipe curr_recipe;
+  int num_pumps_started;
   int num_pumps_finished;
   boolean stopped;
 }state_variables;

@@ -29,7 +29,8 @@ state_variables vars = {
   MIXER_UP, //mixer pos
   false, // mising
   NULL, //pointer to recipe
-  0, //num pumps
+  0, // num pumps started
+  0, //num pumps finished
   false //stopped
 };
 
@@ -200,6 +201,8 @@ void makeDrink(Request &req, Response &res) {
       ingredients,
       counter,
     };
+    num_pumps_finished = 0;
+    vars.num_pumps_started = 0;
     vars.curr_recipe = r;
     vars.recipe_loaded = true;
 
@@ -300,9 +303,14 @@ void setup() {
 
 }
 
+void update_variables(){
+  vars.num_pumps_finished = num_pumps_finished;
+}
+
 
 void loop() {
   petWatchdog();
+  update_variables();
   CURR_STATE = update_fsm(CURR_STATE, server_running, vars);
   WiFiClient client = server.available();
   if (client) {
@@ -320,21 +328,22 @@ void loop() {
 /////////////////////MECHANICS///////////////////////
 
 void start_pumps(recipe ordered_recipe) {
-
+  //not using this anymore 
   //start each pump, start service routine to stop that pump after x amount of time
   //in the ISR decrement vars.num_pumps_running
 
 
   //for now:
-  vars.num_pumps_running = ordered_recipe.num_ingredients;
-  vars.recipe_loaded = false;
-
+//  vars.num_pumps_running = ordered_recipe.num_ingredients;
+//  vars.recipe_loaded = false;
+//
   //start pumps
-  for (int i = 0; i < ordered_recipe.num_ingredients; i++) {
-    ingredient ing = ordered_recipe.ingredients[i];
-    start_pump(ing.pump, ing.amount);
-    vars.num_pumps_running--;
-  }
+//  for (int i = 0; i < ordered_recipe.num_ingredients; i++) {
+//    ingredient ing = ordered_recipe.ingredients[i];
+//    start_pump(ing.pump, ing.amount);
+//    vars.num_pumps_running--;
+//  }
+
 }
 
 void change_mixer_position(mixer_position new_pos) {
@@ -366,9 +375,12 @@ void start_mixer() {
 
 void start_pump(int pump, float amount) {
   if (vars.stopped) return;
+  vars.num_pumps_started ++;
   digitalWrite(pump, HIGH);
+  
   //call ounces_to_seconds(amount) and pass to delay
   delay_helper(ounces_to_seconds(amount));
+  
   digitalWrite(pump, LOW);
 }
 
@@ -422,6 +434,7 @@ void emergency_stop() {
 void reset_state() {
   vars.stopped = false;
   vars.recipe_loaded = false;
+  vars.num_pumps_started = 0;
   vars.num_pumps_finished = 0;
   vars.mixing = false;
   vars.mixer_pos = MIXER_UP;

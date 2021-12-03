@@ -86,7 +86,9 @@ void TC3_Handler() {
   TC3->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
   // Reference pin with PORT->Group[PORTB].register_name.reg
   PORT->Group[PORTB].OUTCLR.reg = 1 << PB_PIN;
+  
   num_pumps_finished ++;
+  
   // Turn off pump
   digitalWrite(running_pump_pin, LOW);
 }

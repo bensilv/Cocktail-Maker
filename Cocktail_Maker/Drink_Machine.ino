@@ -5,8 +5,6 @@ state update_fsm(state cur_state, boolean server_running,
                 state_variables vars) {
                   
   state next_state;
-//  Serial.print("stopped: ");
-//  Serial.println(vars.stopped);
   if (vars.stopped == true){
     next_state = sALL_STOP;
     if (cur_state != next_state) {
@@ -29,7 +27,6 @@ state update_fsm(state cur_state, boolean server_running,
     break;
   case sREADY_TO_MAKE:
     if (vars.recipe_loaded){
-//      start_pumps(vars.curr_recipe);
       next_state = sSTART_PUMP;
     } else {
       next_state = sREADY_TO_MAKE;
@@ -37,14 +34,16 @@ state update_fsm(state cur_state, boolean server_running,
     break;
   case sSTART_PUMP:
     int curr_pump_pin = vars.curr_recipe.ingredients[vars.num_pumps_finished];
-    
- 
+    start_pump(curr_pump_pin);
+    next_state = sPUMPING;
     break;
   case sPUMPING:
-    if (vars.num_pumps_running == 0){
+    if (vars.num_pumps_finished == vars.curr_recipe.num_ingredients){
       next_state = sMIXER_LOWERING;
       change_mixer_position(MIXER_DOWN);
-    } else {
+    } else if (vars.num_pumps_finished == vars.num_pumps_started){
+      next_state = sSTART_PUMP;
+    }else {
       next_state = sPUMPING;
     }
     break;
