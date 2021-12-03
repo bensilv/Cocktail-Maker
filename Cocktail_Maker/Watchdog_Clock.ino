@@ -1,4 +1,5 @@
 volatile int running_pump_pin = -1;
+const int CLOCKFREQ = 4000000;
 
 void setup_clock_watchdog() {
 
@@ -85,7 +86,7 @@ void TC3_Handler() {
   TC3->COUNT16.INTENCLR.reg = TC_INTENCLR_MC0;
   TC3->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
   // Reference pin with PORT->Group[PORTB].register_name.reg
-  PORT->Group[PORTB].OUTCLR.reg = 1 << PB_PIN;
+//  PORT->Group[PORTB].OUTCLR.reg = 1 << PB_PIN;
   
   num_pumps_finished ++;
   

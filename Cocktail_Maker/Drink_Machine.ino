@@ -33,8 +33,7 @@ state update_fsm(state cur_state, boolean server_running,
     }
     break;
   case sSTART_PUMP:
-    int curr_pump_pin = vars.curr_recipe.ingredients[vars.num_pumps_finished];
-    start_pump(curr_pump_pin);
+    start_pump((vars.curr_recipe.ingredients[vars.num_pumps_finished]).pump, (vars.curr_recipe.ingredients[vars.num_pumps_finished]).amount);
     next_state = sPUMPING;
     break;
   case sPUMPING:

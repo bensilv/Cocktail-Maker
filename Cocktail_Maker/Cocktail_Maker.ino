@@ -9,8 +9,10 @@ state CURR_STATE = sSETUP;
 //char pass[] = ""; // for networks that require a password
 //char ssid[] = "Dumplings";  // network SSID (name)
 //char pass[] = "dicksonthewall"; // for networks that require a password
-char ssid[] = "Fios-Tr7ML";  // network SSID (name)
-char pass[] = "dia393law47race"; // for networks that require a password
+//char ssid[] = "Fios-Tr7ML";  // network SSID (name)
+//char pass[] = "dia393law47race"; // for networks that require a password
+char ssid[] = "rufus";  // network SSID (name)
+char pass[] = "ruufuuss"; // for networks that require a password
 int status = WL_IDLE_STATUS;
 
 boolean stop_disabled = false;
@@ -18,7 +20,7 @@ boolean stop_disabled = false;
 char heroku[] = "arduino-cocktail-maker.herokuapp.com";
 String indexPage = "";
 int last_emergency_stop = 0;
-num_pumps_finished = 0;
+
 
 
 //guard member variables
@@ -273,6 +275,7 @@ void setup() {
 
   SDSetup();
   CURR_STATE = sSETUP;
+  num_pumps_finished = 0;
   Serial.println(s2str(CURR_STATE));
   while (status != WL_CONNECTED) {
     Serial.print("Attempting to connect to: ");
