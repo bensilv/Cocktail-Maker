@@ -3,6 +3,7 @@
 #include <aWOT.h>
 #include <SPI.h>
 #include <SD.h>
+#include <Servo.h>
 
 typedef enum {
   PUMP_ONE = 6,
@@ -27,9 +28,8 @@ typedef enum {
 } state;
 
 typedef enum {
-  MIXER_UP = 1,
-  MIXER_DOWN = 2,
-  
+  MIXER_UP = 40,
+  MIXER_DOWN = 120,
 }mixer_position;
 
 
@@ -52,15 +52,10 @@ typedef struct {
   recipe curr_recipe;
   int num_pumps_running;
   boolean stopped;
+  boolean server_running;
 }state_variables;
 
-
-StaticJsonDocument<1000> getDrinkData();
-StaticJsonDocument<1000> getPumpData();
-
-void updateDrinkData(StaticJsonDocument<1000> drinks);
-void SDSetup ();
-state update_fsm(state cur_state, boolean server_running);
-char* s2str(state s);
-void start_pumps(recipe ordered_recipe);
-int get_pump_num (String ingredient);
+state_variables vars;
+state CURR_STATE;
+volatile state_variables *vars_p = &vars;
+void (*callback)(void);

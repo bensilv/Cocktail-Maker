@@ -1,26 +1,32 @@
-volatile int running_pump_pin = -1;
 
-void setup_clock_watchdog() {
+int CLOCKFREQ = 32768;
 
-  /**
-   * Clock Setup
+void setupTimers() {
+
+  /*
+   * General Timer Setup
    */
+
   // Configure and enable GCLK4 for TC:
-  GCLK->GENDIV.reg = GCLK_GENDIV_DIV(0) | GCLK_GENDIV_ID(4); // do not divide gclk 4
+  
+  GCLK->GENDIV.reg = GCLK_GENDIV_DIV(0) | GCLK_GENDIV_ID(4); 
   while(GCLK->STATUS.bit.SYNCBUSY);
-  GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSC8M | GCLK_GENCTRL_ID(4) | GCLK_GENCTRL_IDC;
+  GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSC32K | GCLK_GENCTRL_ID(2) | GCLK_GENCTRL_IDC;
   while(GCLK->STATUS.bit.SYNCBUSY);
-  GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN(4) | GCLK_CLKCTRL_ID(0x1B);
+  GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN(2) | GCLK_CLKCTRL_ID(0x1B);
 
   // Configure and enable TC:
   TC3->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
   while(TC3->COUNT16.STATUS.bit.SYNCBUSY);
   TC3->COUNT16.INTENCLR.reg |= TC_INTENCLR_MC0;
+  
   // Set up NVIC:
   NVIC_SetPriority(TC3_IRQn, 0);
   NVIC_EnableIRQ(TC3_IRQn);
 
-  /**
+  
+
+  /*
    * Watchdog Setup
    */
   // Clear and enable WDT
@@ -51,12 +57,7 @@ void setup_clock_watchdog() {
   // reference WDT registers with WDT->register_name.reg
   WDT->INTENSET.reg = WDT_INTENSET_EW;
 
-  Serial.println("Watchdog & Clocks Initialized!");
-  
-}
-
-void start_pump_clock(int pumpPort, int dur_millis) {
-  running_pump_pin = pumpPort;
+  Serial.println("Timers Initialized!");
 }
 
 void petWatchdog() {
@@ -64,19 +65,28 @@ void petWatchdog() {
   WDT->CLEAR.reg = 165;
 }
 
-void TC3_Handler() {
-  // Clear interrupt register flag
-  // (register TC3->COUNT16.register_name.reg)
-  TC3->COUNT16.INTFLAG.reg = TC_INTFLAG_MC0;
-  
-  // Turn off pump
-  digitalWrite(running_pump_pin, LOW);
-}
-
 void WDT_Handler() {
   // Clear interrupt register flag
   // (reference register with WDT->register_name.reg)
   WDT->INTFLAG.reg = WDT_INTFLAG_EW;
   // Warn user that a watchdog reset may happen
-  Serial.println("Watchog reset about to happen");
+  Serial.println("Watchog Reset Warning");
+}
+
+void start_timer(int dur_millis) {
+  int duration =  ((CLOCKFREQ * (dur_millis/1000)) /64);
+  TC3->COUNT16.INTENCLR.reg |= TC_INTENCLR_MC0;
+  TC3->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE | TC_CTRLA_PRESCALER_DIV64 | TC_CTRLA_WAVEGEN_MFRQ | TC_CTRLA_MODE_COUNT16 | TC_CTRLA_PRESCSYNC_PRESC;
+  while(TC3->COUNT16.STATUS.bit.SYNCBUSY);
+  TC3->COUNT16.CC[0].reg = TC_COUNT16_CC_CC(duration);
+  while(TC3->COUNT16.STATUS.bit.SYNCBUSY);
+  TC3->COUNT16.INTENSET.reg |= TC_INTENSET_MC0;
+}
+
+
+void TC3_Handler() {
+  // Clear interrupt register flag
+  TC3->COUNT16.INTFLAG.reg = TC_INTFLAG_MC0;
+  (*callback)();
+  
 }

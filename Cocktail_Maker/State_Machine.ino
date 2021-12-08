@@ -1,30 +1,36 @@
 
 
+void setupFSM(){
+  vars = state_variables{
+    MIXER_UP, //mixer pos
+    false, // mising
+    NULL, //pointer to recipe
+    0, //num pumps
+    false, //stopped
+    false //server_running
+  };
+}
 
-state update_fsm(state cur_state, boolean server_running, 
-                state_variables vars) {
-                  
+state update_fsm(state cur_state, state_variables vars) {
+               
   state next_state;
-//  Serial.print("stopped: ");
-//  Serial.println(vars.stopped);
+
   if (vars.stopped == true and cur_state != sSETUP){
     next_state = sALL_STOP;
     if (cur_state != next_state) {
       Serial.println(s2str(next_state));
     }
-    digitalWrite(RED_LED, HIGH);
-    digitalWrite(GREEN_LED, LOW);
-    return sALL_STOP;
+    displayRedLED();
+    return next_state;
   }
   
   switch(cur_state) {
   case sSETUP:
-    if (server_running){ // 1->2
+    if (vars.server_running){ 
       next_state = sREADY_TO_MAKE;
+      displayGreenLED();
     } else {
       next_state = sSETUP;
-      digitalWrite(GREEN_LED, HIGH);
-      digitalWrite(RED_LED, LOW);
     }
     break;
   case sREADY_TO_MAKE:
@@ -39,19 +45,12 @@ state update_fsm(state cur_state, boolean server_running,
     if (vars.num_pumps_running == 0){
       next_state = sMIXING;
       change_mixer_position(MIXER_DOWN);
-      start_mixer(); //this begins mixer and starts clock
+      start_mixer(); 
     } else {
       next_state = sPUMPING;
     }
     break;
-//  case sMIXER_LOWERING:
-//    if (vars.mixer_pos == MIXER_DOWN){
-//      next_state = sMIXING;
-//      start_mixer();
-//    } else {
-//      next_state = sMIXER_LOWERING;
-//    }
-//    break;
+
   case sMIXING:
     if (vars.mixing == false){ //this variable was changed by the ISR
       next_state = sREADY_TO_MAKE;
@@ -60,17 +59,9 @@ state update_fsm(state cur_state, boolean server_running,
       next_state = sMIXING;
     }
     break;
-//  case sMIXER_RAISING: 
-//    if (vars.mixer_pos == MIXER_UP){
-//      next_state = sREADY_TO_MAKE;
-//    } else {
-//      next_state = sMIXER_RAISING;
-//    }
-//    break;
   case sALL_STOP:
     if (vars.stopped == false){
-      digitalWrite(GREEN_LED, HIGH);
-      digitalWrite(RED_LED, LOW);
+      displayGreenLED();
       next_state = sREADY_TO_MAKE;
     } else {
       next_state = sALL_STOP;

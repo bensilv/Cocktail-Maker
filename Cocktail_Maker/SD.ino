@@ -1,10 +1,6 @@
 
-
-
 void SDSetup () {
   Serial.print("Initializing SD card...");
-//  pinMode(4, OUTPUT); // change this to 53 on a mega  // don't follow this!!
-//  digitalWrite(4, HIGH); // Add this line
   if (!SD.begin(4))      {
   Serial.println("initialization failed!");
   }
@@ -12,66 +8,59 @@ void SDSetup () {
 }
 
 
-StaticJsonDocument<1000> getDrinkData() {
+File open_truncate(String filename){
+  SD.remove(filename);
+  return SD.open(filename, FILE_WRITE);
+}
+
+StaticJsonDocument<1000> jsonDocFromFile(String filename) {
   StaticJsonDocument<1000> doc;
-  if (SD.exists("drinks.txt")) {
-    File file = SD.open("drinks.txt");
-    String json = "";
-    if (file) {
-      while (file.available()) {
-        json += (char) file.read();
-      }
-      file.close();
-   }
-   deserializeJson(doc, json);
+  String json;
+  if (SD.exists(filename)) {
+    File file = SD.open(filename);
+    json = jsonListFromFile(file);
+    file.close();
   } else {
-    String json = "[]";
-    deserializeJson(doc, json);
+    json = "[]";
   }
+  deserializeJson(doc, json);
   return doc;
 }
 
-StaticJsonDocument<1000> getPumpData() {
-  StaticJsonDocument<1000> doc;
-  if (SD.exists("pumps.txt")) {
-    File file = SD.open("pumps.txt");
-    String json = "";
+String jsonListFromFile(File file){
+  String json = "";
     if (file) {
       while (file.available()) {
         json += (char) file.read();
       }
-      file.close();
     }
-    deserializeJson(doc, json);
-  } else {
-    String json = "[]";
-    deserializeJson(doc, json);
-  }
-  return doc;
+  return json;
 }
+
+
+StaticJsonDocument<1000> getPumpData() {
+  return jsonDocFromFile("pumps.txt");
+}
+
+StaticJsonDocument<1000> getDrinkData() {
+  return jsonDocFromFile("drinks.txt");
+}
+
 
 void updateDrinkData(StaticJsonDocument<1000> doc) {
   JsonArray drinks = doc.as<JsonArray>();
   for (JsonObject drink : drinks) {
     const char* drinkStr = drink["name"];
     const char* descriptionStr = drink["description"];
-    Serial.println(drinkStr);
-    Serial.println(descriptionStr);
   }
-  Serial.println("updating drinks sd");
-  SD.remove("drinks.txt");
-  File file = SD.open("drinks.txt", FILE_WRITE);
+  File file = open_truncate("drinks.txt");
   serializeJson(doc, file);
-  serializeJson(doc, Serial);
   file.close();
 }
 
 void updatePumpData(StaticJsonDocument<1000> doc) {
   JsonArray pumps = doc.as<JsonArray>();
-  Serial.println("updating pumps sd");
-  SD.remove("pumps.txt");
-  File file = SD.open("pumps.txt", FILE_WRITE);
+  File file = open_truncate("pumps.txt");
   serializeJson(doc, file);
-  serializeJson(doc, Serial);
   file.close();
 }
