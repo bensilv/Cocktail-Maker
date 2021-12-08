@@ -37,9 +37,10 @@ void start_pump() {
 
   Serial.print("starting pump: ");
   Serial.println(pump);
+  Serial.println(amount);
+  Serial.println(ounces_to_millis(amount));
   start_timer(ounces_to_millis(amount));
-//  delay(5000);
-//  stop_pump();
+
 }
 
 
