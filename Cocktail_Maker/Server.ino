@@ -3,10 +3,10 @@
 //char pass[] = "257basement"; // for networks that require a password
 //char ssid[] = "Brown-Guest";  // network SSID (name)
 //char pass[] = ""; // for networks that require a password
-//char ssid[] = "Fios-Tr7ML";  // network SSID (name)
-//char pass[] = "dia393law47race"; // for networks that require a password
-char ssid[] = "Dumplings";  // network SSID (name)
-char pass[] = "dicksonthewall"; // for networks that require a password
+char ssid[] = "Fios-Tr7ML";  // network SSID (name)
+char pass[] = "dia393law47race"; // for networks that require a password
+//char ssid[] = "Dumplings";  // network SSID (name)
+//char pass[] = "dicksonthewall"; // for networks that require a password
 int status = WL_IDLE_STATUS;
 
 
@@ -103,14 +103,16 @@ void handleMakeDrink(Request &req, Response &res) {
   StaticJsonDocument<500> drinkdoc;
   deserializeJson(drinkdoc, *req.stream());
   JsonObject drink_recipe = drinkdoc["recipe"].as<JsonObject>();
-  
-  recipe *r = getRequestedRecipe(drink_recipe);
-  if (r == NULL) {
+
+  boolean ok = verifyRequestedRecipe(drink_recipe);
+
+  if (!ok) {
     setResBody(req, res, createPostResponse("false", "Current pumps do not contain all necessary ingredients"));
     return;
   }
   setResBody(req, res, createPostResponse("true", ""));
-  vars.curr_recipe = *r;
+
+  getRequestedRecipe(drink_recipe);
   vars.recipe_loaded = true;
 }
 
@@ -152,27 +154,41 @@ void handleClient(){
 
 
 
-recipe* getRequestedRecipe(JsonObject drink_recipe){
- 
+void getRequestedRecipe(JsonObject drink_recipe){
   ingredient ingredients[drink_recipe.size()];
   int counter = 0;
   for (JsonPair kv : drink_recipe) {
     String liquid = String(kv.key().c_str());
     float amount = kv.value().as<String>().toFloat();
     int pump_num = getPumpNum(liquid);
-    if (pump_num < 0 or amount == 0) {
-      return NULL;
-    }
     ingredients[counter] = ingredient{pump_num, amount};
     counter++;
   }
   recipe r = {
-      ingredients,
-      counter,
+    ingredients,
+    counter,
   };
 
-  return &r;
+  vars.curr_recipe = r;
+
 }
+
+
+
+boolean verifyRequestedRecipe(JsonObject drink_recipe){
+  for (JsonPair kv : drink_recipe) {
+    String liquid = String(kv.key().c_str());
+    float amount = kv.value().as<String>().toFloat();
+    int pump_num = getPumpNum(liquid);
+    if (pump_num < 0 or amount == 0) {
+      return false;
+    }
+  }
+    
+   return true;
+   
+}
+
 
 int getPumpNum (String ingredient){
   String pumps = "";

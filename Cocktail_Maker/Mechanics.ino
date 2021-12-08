@@ -1,3 +1,8 @@
+volatile int[] curr_pumps;
+volatile float[] curr_ounces;
+volatile int num_pumps_running;
+volatile int num_ingredients; 
+
 
 Servo myservo;
 int last_emergency_stop = 0;
@@ -17,36 +22,60 @@ void mechanicsSetup() {
   pinMode(RED_LED, OUTPUT);
   myservo.attach(SERVO);
   myservo.write(40);
-  attachInterrupt(digitalPinToInterrupt(BUTTON), emergency_stop, RISING);
+  //attachInterrupt(digitalPinToInterrupt(BUTTON), emergency_stop, RISING);
 }
 
 
 
 void start_pump() {
-  int next_index = vars_p->curr_recipe.num_ingredients - vars_p->num_pumps_running;
-  ingredient next_ingredient = vars_p->curr_recipe.ingredients[next_index];
+  int next_index = num_ingredients - num_pumps_running;
+  int pump = curr_pumps[next_index];
+  float amount = curr_ounces[next__index];
  
-  digitalWrite(next_ingredient.pump, HIGH);
-  start_timer(ounces_to_millis(next_ingredient.amount));
+  digitalWrite(pump, HIGH);
+
+  Serial.print("millis: ");
+  Serial.println(millis());
+  Serial.print("starting pump: ");
+  Serial.println(pump);
+  start_timer(ounces_to_millis(amount));
+//  delay(5000);
+//  stop_pump();
 }
 
 
 void stop_pump(){
-  int curr_index = vars_p->curr_recipe.num_ingredients - vars_p->num_pumps_running;
-  ingredient curr_ingredient = vars_p->curr_recipe.ingredients[curr_index];
+  int curr_index = num_ingredients - num_pumps_running;
+  int pump = curr_pumps[curr_index];
+ 
+ 
 
-  digitalWrite(curr_ingredient.pump, LOW);
-  vars_p->num_pumps_running --;
-  if (vars_p->num_pumps_running != 0){
+  digitalWrite(pump, LOW);
+  num_pumps_running --;
+  Serial.print("millis: ");
+  Serial.println(millis());
+  Serial.print("stopping pump: ");
+  Serial.println(pump);
+  
+ 
+  if (num_pumps_running != 0){
     start_pump();
   }
 }
 
 
 void start_pumps(recipe ordered_recipe) {
+    num_pumps_running = ordered_recipe.num_ingredients;
+    num_ingredients = ordered_recipe.num_ingredients;
+    for (int i=0; i<num_ingredients;i++){
+      curr_ounces[i] = ordered_recipe.ingredients[i].amount;
+      curr_pumps[i] = ordered_recipe.ingredients[i].pump;
+    }
+    
     callback = &stop_pump;
     vars.recipe_loaded = false;
     start_pump();
+
 }
 
 
@@ -67,7 +96,9 @@ void start_mixer() {
   callback = &stop_mixer;
   vars.mixing = true;
   analogWrite(DC_MOTOR, 200);
-  start_timer(1000);
+  //start_timer(1000);
+  delay(1000);
+  stop_mixer();
 }
 
 

@@ -87,6 +87,9 @@ void start_timer(int dur_millis) {
 void TC3_Handler() {
   // Clear interrupt register flag
   TC3->COUNT16.INTFLAG.reg = TC_INTFLAG_MC0;
+  TC3->COUNT16.INTENCLR.reg = TC_INTENCLR_MC0;
+  TC3->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
+  
   (*callback)();
   
 }
