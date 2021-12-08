@@ -1,5 +1,5 @@
 #include "Cocktail_Maker.h"
-#define TESTING;
+#define TESTING = true;
 
 void setup(){
   CURR_STATE = sSETUP;
@@ -12,7 +12,7 @@ void setup(){
   Serial.println(s2str(CURR_STATE));
 
   #ifdef TESTING
-  //runTestSuite();
+  runTestSuite();
   #endif
   
 }

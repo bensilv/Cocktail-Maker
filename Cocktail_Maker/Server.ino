@@ -3,10 +3,10 @@
 //char pass[] = "257basement"; // for networks that require a password
 //char ssid[] = "Brown-Guest";  // network SSID (name)
 //char pass[] = ""; // for networks that require a password
-char ssid[] = "Fios-Tr7ML";  // network SSID (name)
-char pass[] = "dia393law47race"; // for networks that require a password
-//char ssid[] = "Dumplings";  // network SSID (name)
-//char pass[] = "dicksonthewall"; // for networks that require a password
+//char ssid[] = "Fios-Tr7ML";  // network SSID (name)
+//char pass[] = "dia393law47race"; // for networks that require a password
+char ssid[] = "Dumplings";  // network SSID (name)
+char pass[] = "dicksonthewall"; // for networks that require a password
 int status = WL_IDLE_STATUS;
 
 

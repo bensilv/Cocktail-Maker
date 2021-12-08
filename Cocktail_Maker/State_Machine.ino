@@ -1,21 +1,33 @@
 
 
 void setupFSM(){
+
+  ingredient ingredients[2];
+  recipe myRecipe;
+  ingredients[0] = ingredient{PUMP_ONE, 1.0};
+  ingredients[1] = ingredient{PUMP_TWO, 1.0};
+  myRecipe = {ingredients, 2}; 
+
+
+  
   vars = state_variables{
     MIXER_UP, //mixer pos
-    false, // mising
-    NULL, //pointer to recipe
+    false, // mixing
+    false, // recipe_loaded
+    myRecipe, //curr_recipe;
     0, //num pumps
     false, //stopped
     false //server_running
   };
 }
 
-state update_fsm(state cur_state, state_variables vars) {
-               
+state update_fsm(state cur_state, state_variables state_vars) {
+ 
   state next_state;
 
-  if (vars.stopped == true and cur_state != sSETUP){
+  
+
+  if (state_vars.stopped == true and cur_state != sSETUP){
     next_state = sALL_STOP;
     if (cur_state != next_state) {
       Serial.println(s2str(next_state));
@@ -26,7 +38,7 @@ state update_fsm(state cur_state, state_variables vars) {
   
   switch(cur_state) {
   case sSETUP:
-    if (vars.server_running){ 
+    if (state_vars.server_running){ 
       next_state = sREADY_TO_MAKE;
       displayGreenLED();
     } else {
@@ -34,15 +46,15 @@ state update_fsm(state cur_state, state_variables vars) {
     }
     break;
   case sREADY_TO_MAKE:
-    if (vars.recipe_loaded){
-      start_pumps(vars.curr_recipe);
+    if (state_vars.recipe_loaded){
+      start_pumps(state_vars.curr_recipe);
       next_state = sPUMPING;
     } else {
       next_state = sREADY_TO_MAKE;
     }
     break;
   case sPUMPING:
-    if (vars.num_pumps_running == 0){
+    if (state_vars.num_pumps_running == 0){
       next_state = sMIXING;
       change_mixer_position(MIXER_DOWN);
       start_mixer(); 
@@ -52,7 +64,7 @@ state update_fsm(state cur_state, state_variables vars) {
     break;
 
   case sMIXING:
-    if (vars.mixing == false){ //this variable was changed by the ISR
+    if (state_vars.mixing == false){ //this variable was changed by the ISR
       next_state = sREADY_TO_MAKE;
       change_mixer_position(MIXER_UP);
     } else {
@@ -60,7 +72,7 @@ state update_fsm(state cur_state, state_variables vars) {
     }
     break;
   case sALL_STOP:
-    if (vars.stopped == false){
+    if (state_vars.stopped == false){
       displayGreenLED();
       next_state = sREADY_TO_MAKE;
     } else {

@@ -28,31 +28,23 @@ void mechanicsSetup() {
 
 
 
-void start_pump() {
+volatile void start_pump() {
   int next_index = num_ingredients - num_pumps_running;
   int pump = curr_pumps[next_index];
   float amount = curr_ounces[next_index];
  
   digitalWrite(pump, HIGH);
-
-  Serial.print("starting pump: ");
-  Serial.println(pump);
-  Serial.println(amount);
-  Serial.println(ounces_to_millis(amount));
   start_timer(ounces_to_millis(amount));
 
 }
 
 
-void stop_pump(){
+volatile void stop_pump(){
   int curr_index = num_ingredients - num_pumps_running;
   int pump = curr_pumps[curr_index];
 
   digitalWrite(pump, LOW);
   num_pumps_running --;
-  Serial.print("stopping pump: ");
-  Serial.println(pump);
- 
   if (num_pumps_running != 0){
     start_pump();
   }
@@ -62,6 +54,7 @@ void stop_pump(){
 void start_pumps(recipe ordered_recipe) {
     num_pumps_running = ordered_recipe.num_ingredients;
     num_ingredients = ordered_recipe.num_ingredients;
+
     curr_ounces = new volatile float[6];
     curr_pumps = new volatile int[6];
     for (int i=0; i<num_ingredients;i++){
@@ -89,7 +82,7 @@ void change_mixer_position(mixer_position new_pos) {
 }
 
 
-void stop_mixer(){
+volatile void stop_mixer(){
   analogWrite(DC_MOTOR, 0);
   mixing = false;
 }

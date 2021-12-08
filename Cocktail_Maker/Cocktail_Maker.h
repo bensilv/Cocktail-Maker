@@ -58,4 +58,4 @@ typedef struct {
 state_variables vars;
 state CURR_STATE;
 volatile state_variables *vars_p = &vars;
-void (*callback)(void);
+volatile void (*callback)(void);
