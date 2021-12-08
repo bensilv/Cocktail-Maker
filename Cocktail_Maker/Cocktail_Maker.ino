@@ -21,6 +21,7 @@ void loop() {
   petWatchdog();
   //pass by value, vars gets copied so the vars passed in are a "snapshot"
   //same with CURR_STATE
+  readVolatileVals();
   CURR_STATE = update_fsm(CURR_STATE, vars);
   handleClient();
   delay(10);

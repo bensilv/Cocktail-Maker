@@ -1,7 +1,8 @@
-volatile int[] curr_pumps;
-volatile float[] curr_ounces;
+volatile int* curr_pumps;
+volatile float* curr_ounces;
 volatile int num_pumps_running;
 volatile int num_ingredients; 
+volatile boolean mixing;
 
 
 Servo myservo;
@@ -30,12 +31,10 @@ void mechanicsSetup() {
 void start_pump() {
   int next_index = num_ingredients - num_pumps_running;
   int pump = curr_pumps[next_index];
-  float amount = curr_ounces[next__index];
+  float amount = curr_ounces[next_index];
  
   digitalWrite(pump, HIGH);
 
-  Serial.print("millis: ");
-  Serial.println(millis());
   Serial.print("starting pump: ");
   Serial.println(pump);
   start_timer(ounces_to_millis(amount));
@@ -47,16 +46,11 @@ void start_pump() {
 void stop_pump(){
   int curr_index = num_ingredients - num_pumps_running;
   int pump = curr_pumps[curr_index];
- 
- 
 
   digitalWrite(pump, LOW);
   num_pumps_running --;
-  Serial.print("millis: ");
-  Serial.println(millis());
   Serial.print("stopping pump: ");
   Serial.println(pump);
-  
  
   if (num_pumps_running != 0){
     start_pump();
@@ -67,6 +61,8 @@ void stop_pump(){
 void start_pumps(recipe ordered_recipe) {
     num_pumps_running = ordered_recipe.num_ingredients;
     num_ingredients = ordered_recipe.num_ingredients;
+    curr_ounces = new volatile float[6];
+    curr_pumps = new volatile int[6];
     for (int i=0; i<num_ingredients;i++){
       curr_ounces[i] = ordered_recipe.ingredients[i].amount;
       curr_pumps[i] = ordered_recipe.ingredients[i].pump;
@@ -76,6 +72,11 @@ void start_pumps(recipe ordered_recipe) {
     vars.recipe_loaded = false;
     start_pump();
 
+}
+
+void readVolatileVals(){
+  vars.num_pumps_running = num_pumps_running;
+  vars.mixing = mixing;
 }
 
 
@@ -89,16 +90,14 @@ void change_mixer_position(mixer_position new_pos) {
 
 void stop_mixer(){
   analogWrite(DC_MOTOR, 0);
-  vars_p->mixing = false;
+  mixing = false;
 }
 
 void start_mixer() {
   callback = &stop_mixer;
-  vars.mixing = true;
+  mixing = true;
   analogWrite(DC_MOTOR, 200);
-  //start_timer(1000);
-  delay(1000);
-  stop_mixer();
+  start_timer(1000);
 }
 
 
