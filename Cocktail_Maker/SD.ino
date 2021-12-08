@@ -1,3 +1,6 @@
+String drinks_str = "[]";
+String pumps_str = "[]";
+
 
 void SDSetup () {
   Serial.print("Initializing SD card...");
@@ -6,6 +9,8 @@ void SDSetup () {
   }
   Serial.println("initialization done.");
 }
+
+
 
 
 File open_truncate(String filename){
@@ -37,14 +42,49 @@ String jsonListFromFile(File file){
   return json;
 }
 
+//
+//StaticJsonDocument<1000> getPumpData() {
+//  return jsonDocFromFile("pumps.txt");
+//}
+//
+//StaticJsonDocument<1000> getDrinkData() {
+//  return jsonDocFromFile("drinks.txt");
+//}
+
+
+
 
 StaticJsonDocument<1000> getPumpData() {
-  return jsonDocFromFile("pumps.txt");
+  StaticJsonDocument<1000> doc;
+  Serial.println(pumps_str);
+  deserializeJson(doc, pumps_str);
+  return doc;
 }
 
 StaticJsonDocument<1000> getDrinkData() {
-  return jsonDocFromFile("drinks.txt");
+  StaticJsonDocument<1000> doc;
+  deserializeJson(doc, drinks_str);
+  return doc;
 }
+
+
+//void updateDrinkData(StaticJsonDocument<1000> doc) {
+//  JsonArray drinks = doc.as<JsonArray>();
+//  for (JsonObject drink : drinks) {
+//    const char* drinkStr = drink["name"];
+//    const char* descriptionStr = drink["description"];
+//  }
+//  File file = open_truncate("drinks.txt");
+//  serializeJson(doc, file);
+//  file.close();
+//}
+//
+//void updatePumpData(StaticJsonDocument<1000> doc) {
+//  JsonArray pumps = doc.as<JsonArray>();
+//  File file = open_truncate("pumps.txt");
+//  serializeJson(doc, file);
+//  file.close();
+//}
 
 
 void updateDrinkData(StaticJsonDocument<1000> doc) {
@@ -53,14 +93,14 @@ void updateDrinkData(StaticJsonDocument<1000> doc) {
     const char* drinkStr = drink["name"];
     const char* descriptionStr = drink["description"];
   }
-  File file = open_truncate("drinks.txt");
-  serializeJson(doc, file);
-  file.close();
+  drinks_str = "";
+  serializeJson(doc, drinks_str);
+  Serial.println(drinks_str);
 }
 
 void updatePumpData(StaticJsonDocument<1000> doc) {
+  pumps_str = "";
   JsonArray pumps = doc.as<JsonArray>();
-  File file = open_truncate("pumps.txt");
-  serializeJson(doc, file);
-  file.close();
+  serializeJson(doc, pumps_str);
+  Serial.println(pumps_str);
 }
