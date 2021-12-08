@@ -19,8 +19,6 @@ String indexPage = "";
 WiFiServer server(80);
 Application app;
 
-
-
 void setResHeaders(Response &res){
   res.status(200);
   res.set("Content-Type", "application/json");

@@ -19,7 +19,6 @@ void setup(){
   #ifdef TESTING
     runTestSuite();
   #endif
-  
 }
 
 void loop() {

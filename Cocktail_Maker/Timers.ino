@@ -90,5 +90,4 @@ void TC3_Handler() {
   TC3->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
   
   (*callback)();
-  
 }

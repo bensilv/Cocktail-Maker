@@ -27,7 +27,6 @@ void mechanicsSetup() {
 }
 
 
-
 volatile void start_pump() {
   int next_index = num_ingredients - num_pumps_running;
   int pump = curr_pumps[next_index];
