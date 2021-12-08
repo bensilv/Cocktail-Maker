@@ -2,6 +2,8 @@
 #include <Servo.h>
 Servo myservo;
 
+#define TESTING;
+
 state CURR_STATE = sSETUP;
 //char ssid[] = "Sigma Basement";  // network SSID (name)
 //char pass[] = "257basement"; // for networks that require a password
@@ -296,7 +298,9 @@ void setup() {
   server.begin();
   server_running = true;
 
-
+  #ifdef TESTING
+  runTestSuite();
+  #endif
 }
 
 
@@ -357,11 +361,8 @@ void start_mixer() {
   analogWrite(DC_MOTOR, 200);
   delay_helper(1000);
   analogWrite(DC_MOTOR, 0);
-
   vars.mixing = false;
 }
-
-
 
 void start_pump(int pump, float amount) {
   if (vars.stopped) return;

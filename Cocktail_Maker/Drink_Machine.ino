@@ -7,7 +7,7 @@ state update_fsm(state cur_state, boolean server_running,
   state next_state;
 //  Serial.print("stopped: ");
 //  Serial.println(vars.stopped);
-  if (vars.stopped == true){
+  if (vars.stopped == true and cur_state != sSETUP){
     next_state = sALL_STOP;
     if (cur_state != next_state) {
       Serial.println(s2str(next_state));
@@ -37,35 +37,36 @@ state update_fsm(state cur_state, boolean server_running,
     break;
   case sPUMPING:
     if (vars.num_pumps_running == 0){
-      next_state = sMIXER_LOWERING;
+      next_state = sMIXING;
       change_mixer_position(MIXER_DOWN);
+      start_mixer(); //this begins mixer and starts clock
     } else {
       next_state = sPUMPING;
     }
     break;
-  case sMIXER_LOWERING:
-    if (vars.mixer_pos == MIXER_DOWN){
-      next_state = sMIXING;
-      start_mixer();
-    } else {
-      next_state = sMIXER_LOWERING;
-    }
-    break;
+//  case sMIXER_LOWERING:
+//    if (vars.mixer_pos == MIXER_DOWN){
+//      next_state = sMIXING;
+//      start_mixer();
+//    } else {
+//      next_state = sMIXER_LOWERING;
+//    }
+//    break;
   case sMIXING:
-    if (vars.mixing == false){
-      next_state = sMIXER_RAISING;
+    if (vars.mixing == false){ //this variable was changed by the ISR
+      next_state = sREADY_TO_MAKE;
       change_mixer_position(MIXER_UP);
     } else {
       next_state = sMIXING;
     }
     break;
-  case sMIXER_RAISING: 
-    if (vars.mixer_pos == MIXER_UP){
-      next_state = sREADY_TO_MAKE;
-    } else {
-      next_state = sMIXER_RAISING;
-    }
-    break;
+//  case sMIXER_RAISING: 
+//    if (vars.mixer_pos == MIXER_UP){
+//      next_state = sREADY_TO_MAKE;
+//    } else {
+//      next_state = sMIXER_RAISING;
+//    }
+//    break;
   case sALL_STOP:
     if (vars.stopped == false){
       digitalWrite(GREEN_LED, HIGH);
