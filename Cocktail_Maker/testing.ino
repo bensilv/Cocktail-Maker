@@ -429,7 +429,7 @@ int make_requested_recipe_test(){
   readVolatileVals();
   curr_state = update_fsm(curr_state, vars);
   total += testAssert(curr_state == sMIXING, "make_requested_recipe_b", "expected sMIXING");
-  delay(1000);
+  delay(1500);
   readVolatileVals();
   curr_state = update_fsm(curr_state, vars);
   total += testAssert(curr_state == sREADY_TO_MAKE, "make_requested_recipe_c", "expected sREADY_T0_MAKE");
