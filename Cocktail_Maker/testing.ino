@@ -15,7 +15,7 @@ void runTestSuite() {
   updateDrinkData(drinkdoc);
 
   int passed = 0; 
-  int total = 21 + 3 +3 + 3 + 2; 
+  int total = 35 +4; 
   
   ingredients[0] = ingredient{PUMP_ONE, 0.5};
   ingredients[1] = ingredient{PUMP_TWO, 0.5};
@@ -38,6 +38,9 @@ void runTestSuite() {
   passed += three_to_five_test();
   passed += four_to_two_test(); 
   passed += five_to_two_test();
+  
+  //testing takes a while!
+  petWatchdog();
 
   Serial.println("\n\n----- Mechanics Tests -----\n");
   passed += ounces_to_millis_test(); 
@@ -48,8 +51,15 @@ void runTestSuite() {
   Serial.println("\n\n----- Server Tests -----\n");
 
   passed += verify_requested_recipe_test();
-  
+  passed += make_requested_recipe_test();
 
+  Serial.println("\n\n----- SD Tests -----\n");
+
+  passed += set_get_pumps_test();
+  passed += set_get_drinks_test();
+
+  
+ 
   Serial.print(passed);
   Serial.print(" of ");
   Serial.print(total);
@@ -406,7 +416,80 @@ int verify_requested_recipe_test(){
 
 int make_requested_recipe_test(){
   int total = 0;
+  StaticJsonDocument<500> drinkdoc;
+  deserializeJson(drinkdoc, "{\"name\":\"drink 1\",\"description\":\"description\",\"recipe\":{\"a\":\"2\",\"b\":\"1.5\"}}");
+  JsonObject drink_recipe = drinkdoc["recipe"].as<JsonObject>();
+  state curr_state = update_fsm(sREADY_TO_MAKE, vars);
+  makeRequestedRecipe(drink_recipe);
+  readVolatileVals();
+  curr_state = update_fsm(curr_state, vars);
+  total += testAssert(curr_state == sPUMPING, "make_requested_recipe_a", "expected sPUMPING");
+  delay(ounces_to_millis(2) + 100);
+  delay(ounces_to_millis(1.5) + 100);
+  readVolatileVals();
+  curr_state = update_fsm(curr_state, vars);
+  total += testAssert(curr_state == sMIXING, "make_requested_recipe_b", "expected sMIXING");
+  delay(1000);
+  readVolatileVals();
+  curr_state = update_fsm(curr_state, vars);
+  total += testAssert(curr_state == sREADY_TO_MAKE, "make_requested_recipe_c", "expected sREADY_T0_MAKE");
   return total;
+}
+
+
+/*
+ * SD tests
+ */
+
+
+int set_get_pumps_test(){
+  int total = 0;
+
+  StaticJsonDocument<1000> pumpdoc;
+  deserializeJson(pumpdoc, "[]");
+  updatePumpData(pumpdoc);
+
+  String pumps_str = "";
+  
+  serializeJson(getPumpData(), pumps_str);
+  total += testAssert(pumps_str == "[]", "set_get_pumps_a", "incorrect string");
+  
+  StaticJsonDocument<1000> pumpdoc2;
+  deserializeJson(pumpdoc2, "[\"a\",\"b\"]");
+  updatePumpData(pumpdoc2);
+
+  
+  pumps_str = "";
+  serializeJson(getPumpData(), pumps_str);
+  total += testAssert(pumps_str == "[\"a\",\"b\"]", "set_get_pumps_b", "incorrect string");
+
+  return total;
+  
+}
+
+int set_get_drinks_test(){
+  int total = 0;
+
+  StaticJsonDocument<1000> drinkdoc;
+  deserializeJson(drinkdoc, "[]");
+  updateDrinkData(drinkdoc);
+
+  String drinks_str = "";
+  
+  serializeJson(getDrinkData(), drinks_str);
+  total += testAssert(drinks_str == "[]", "set_get_drinks_a", "incorrect string");
+  
+  StaticJsonDocument<1000> drinkdoc2;
+  deserializeJson(drinkdoc2, "[{\"name\":\"drink 1\",\"description\":\"description\",\"recipe\":{\"a\":\"2\",\"b\":\"1.5\"}}]");
+  updateDrinkData(drinkdoc2);
+
+  
+  drinks_str = "";
+  serializeJson(getDrinkData(), drinks_str);
+  total += testAssert(drinks_str == "[{\"name\":\"drink 1\",\"description\":\"description\",\"recipe\":{\"a\":\"2\",\"b\":\"1.5\"}}]", "set_get_drinks_b", "incorrect string");
+
+  return total;
+  
 }
 
  
