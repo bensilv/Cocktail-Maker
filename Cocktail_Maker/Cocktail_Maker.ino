@@ -1,7 +1,7 @@
 #include "Cocktail_Maker.h"
 
 // UNCOMMENT FOR TESTING
-#define TESTING
+//#define TESTING
 
 // UNCOMMENT IF SD CARD PRESENT
 //#define SDPRESENT
