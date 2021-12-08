@@ -1,4 +1,3 @@
-
 int CLOCKFREQ = 32768;
 
 void setupTimers() {

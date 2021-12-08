@@ -1,5 +1,10 @@
 #include "Cocktail_Maker.h"
-#define TESTING = false;
+
+// UNCOMMENT FOR TESTING
+#define TESTING
+
+// UNCOMMENT IF SD CARD PRESENT
+//#define SDPRESENT
 
 void setup(){
   CURR_STATE = sSETUP;
@@ -12,15 +17,13 @@ void setup(){
   Serial.println(s2str(CURR_STATE));
 
   #ifdef TESTING
-  //runTestSuite();
+    runTestSuite();
   #endif
   
 }
 
 void loop() {
   petWatchdog();
-  //pass by value, vars gets copied so the vars passed in are a "snapshot"
-  //same with CURR_STATE
   readVolatileVals();
   CURR_STATE = update_fsm(CURR_STATE, vars);
   handleClient();

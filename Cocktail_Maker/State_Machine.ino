@@ -1,20 +1,17 @@
 
-
 void setupFSM(){
 
-  ingredient ingredients[2];
-  recipe myRecipe;
-  ingredients[0] = ingredient{PUMP_ONE, 1.0};
-  ingredients[1] = ingredient{PUMP_TWO, 1.0};
-  myRecipe = {ingredients, 2}; 
+  // have to do this so that the intiial struct is the right size! 
+  ingredient dummyIngredients[1];
+  dummyIngredients[0] = ingredient{0, 0.0};
+  recipe dummyRecipe = {dummyIngredients, 1}; 
 
 
-  
   vars = state_variables{
     MIXER_UP, //mixer pos
     false, // mixing
     false, // recipe_loaded
-    myRecipe, //curr_recipe;
+    dummyRecipe, //curr_recipe;
     0, //num pumps
     false, //stopped
     false //server_running

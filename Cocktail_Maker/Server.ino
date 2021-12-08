@@ -1,3 +1,6 @@
+//UNCOMMENT AND FILL IN TO CONNECT TO WIFI
+//char ssid[] = "NETWORK NAME";  // network SSID (name)
+//char pass[] = "NETWORK PASSWORD"; // for networks that require a password
 
 //char ssid[] = "Sigma Basement";  // network SSID (name)
 //char pass[] = "257basement"; // for networks that require a password
@@ -111,9 +114,7 @@ void handleMakeDrink(Request &req, Response &res) {
     return;
   }
   setResBody(req, res, createPostResponse("true", ""));
-
-  getRequestedRecipe(drink_recipe);
-  vars.recipe_loaded = true;
+  makeRequestedRecipe(drink_recipe);
 }
 
 void serverSetup() {
@@ -154,7 +155,7 @@ void handleClient(){
 
 
 
-void getRequestedRecipe(JsonObject drink_recipe){
+void makeRequestedRecipe(JsonObject drink_recipe){
   ingredient ingredients[drink_recipe.size()];
   int counter = 0;
   for (JsonPair kv : drink_recipe) {
@@ -170,7 +171,7 @@ void getRequestedRecipe(JsonObject drink_recipe){
   };
 
   vars.curr_recipe = r;
-
+  vars.recipe_loaded = true;
 }
 
 

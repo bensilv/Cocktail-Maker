@@ -9,9 +9,7 @@ Servo myservo;
 int last_emergency_stop = 0;
 
 
-
 void mechanicsSetup() {
-  //mechanical initializations
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(BUTTON, INPUT);
   pinMode(PUMP_ONE, OUTPUT);
@@ -22,8 +20,10 @@ void mechanicsSetup() {
   pinMode(GREEN_LED, OUTPUT);
   pinMode(RED_LED, OUTPUT);
   myservo.attach(SERVO);
-  myservo.write(40);
-  //attachInterrupt(digitalPinToInterrupt(BUTTON), emergency_stop, RISING);
+  #ifndef TESTING
+    myservo.write(40);
+    attachInterrupt(digitalPinToInterrupt(BUTTON), emergency_stop, RISING);
+  #endif
 }
 
 
@@ -32,8 +32,9 @@ volatile void start_pump() {
   int next_index = num_ingredients - num_pumps_running;
   int pump = curr_pumps[next_index];
   float amount = curr_ounces[next_index];
- 
-  digitalWrite(pump, HIGH);
+  #ifndef TESTING
+    digitalWrite(pump, HIGH);
+  #endif
   start_timer(ounces_to_millis(amount));
 
 }
@@ -42,8 +43,9 @@ volatile void start_pump() {
 volatile void stop_pump(){
   int curr_index = num_ingredients - num_pumps_running;
   int pump = curr_pumps[curr_index];
-
-  digitalWrite(pump, LOW);
+  #ifndef TESTING
+    digitalWrite(pump, LOW);
+  #endif
   num_pumps_running --;
   if (num_pumps_running != 0){
     start_pump();
@@ -76,21 +78,27 @@ void readVolatileVals(){
 
 void change_mixer_position(mixer_position new_pos) {
   if (vars.stopped) return;
-  myservo.write(new_pos);
+  #ifndef TESTING
+    myservo.write(new_pos);
+  #endif
   delay(1000);
   vars.mixer_pos = new_pos;
 }
 
 
 volatile void stop_mixer(){
-  analogWrite(DC_MOTOR, 0);
+  #ifndef TESTING
+    analogWrite(DC_MOTOR, 0);
+  #endif
   mixing = false;
 }
 
 void start_mixer() {
   callback = &stop_mixer;
   mixing = true;
-  analogWrite(DC_MOTOR, 200);
+  #ifndef TESTING
+    analogWrite(DC_MOTOR, 200);
+  #endif
   start_timer(1000);
 }
 
@@ -125,24 +133,30 @@ void emergency_stop(){
     vars.stopped = true;
     
     //turn off all pumps, turn off motor + servo
-    analogWrite(DC_MOTOR, 0);
-    digitalWrite(PUMP_ONE, LOW);
-    digitalWrite(PUMP_TWO, LOW);
-    digitalWrite(PUMP_THREE, LOW);
-    digitalWrite(PUMP_FOUR, LOW);
-    myservo.write(40);
+    #ifndef TESTING
+      analogWrite(DC_MOTOR, 0);
+      digitalWrite(PUMP_ONE, LOW);
+      digitalWrite(PUMP_TWO, LOW);
+      digitalWrite(PUMP_THREE, LOW);
+      digitalWrite(PUMP_FOUR, LOW);
+      myservo.write(40);
+    #endif
     vars.mixer_pos = MIXER_UP;
   }
 }
 
 void displayGreenLED(){
-  digitalWrite(GREEN_LED, HIGH);
-  digitalWrite(RED_LED, LOW);
+  #ifndef TESTING
+    digitalWrite(GREEN_LED, HIGH);
+    digitalWrite(RED_LED, LOW);
+  #endif
 }
 
 void displayRedLED(){
-  digitalWrite(RED_LED, HIGH);
-  digitalWrite(GREEN_LED, LOW);
+  #ifndef TESTING
+    digitalWrite(RED_LED, HIGH);
+    digitalWrite(GREEN_LED, LOW);
+  #endif
 }
 
 void reset_state() {
@@ -151,15 +165,9 @@ void reset_state() {
   vars.num_pumps_running = 0;
   vars.mixing = false;
   vars.mixer_pos = MIXER_UP;
-  myservo.write(40);
-}
-
-
-void delay_helper(int mils){
-  int start_time = millis();
-  while(millis() - start_time < mils){
-    if (digitalRead(BUTTON) == 1){
-      emergency_stop_ISR();
-    }   
-  }
+  #ifndef TESTING
+    myservo.write(40);
+  #endif
+  mixing = false;
+  num_pumps_running = 0;
 }
