@@ -74,7 +74,7 @@ void WDT_Handler() {
 }
 
 void start_timer(int dur_millis) {
-  int duration =  ((CLOCKFREQ * (dur_millis/1000)) /64);
+  int duration =  ((32768 * ((float)900/ (float) 1000)) /64);
   Serial.println(duration);
   TC3->COUNT16.INTENCLR.reg |= TC_INTENCLR_MC0;
   TC3->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE | TC_CTRLA_PRESCALER_DIV64 | TC_CTRLA_WAVEGEN_MFRQ | TC_CTRLA_MODE_COUNT16 | TC_CTRLA_PRESCSYNC_PRESC;
